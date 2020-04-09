@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SourceEngine.Heatmap.Generator": {
+      "commandName": "Project",
+      "commandLineArgs": "-inputdatafilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\parses\\\\\" -heatmapjsonfilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\heatmapjson\\\\\" -outputheatmapfilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\\\\" -heatmapstogenerate \"ctkills\" \"tkills\""
+    }
+  }
+}
