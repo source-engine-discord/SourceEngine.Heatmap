@@ -4,7 +4,20 @@ namespace SourceEngine.Heatmap.Generator.Constants
 {
 	public class PenColours
 	{
-		public static Pen PenTerrorist => new Pen(Color.FromArgb(100, 204, 102, 0), 1);
-		public static Pen PenCounterTerrorist => new Pen(Color.FromArgb(100, 51, 153, 255), 1);
+		// Team sides
+		public static Pen PenTerrorist => new Pen(Color.FromArgb(50, 204, 102, 0), 1);
+		public static Pen PenCounterTerrorist => new Pen(Color.FromArgb(50, 51, 153, 255), 1);
+
+		// Weapon Types
+		public static Pen PenWeaponPistol => new Pen(Color.FromArgb(50, 0, 255, 0), 1);
+		public static Pen PenWeaponSMG => new Pen(Color.FromArgb(50, 0, 128, 255), 1);
+		public static Pen PenWeaponLMG => new Pen(Color.FromArgb(50, 255, 51, 153), 1);
+		public static Pen PenWeaponShotgun => new Pen(Color.FromArgb(50, 204, 0, 204), 1);
+		public static Pen PenWeaponAssaultRifle => new Pen(Color.FromArgb(50, 255, 128, 0), 1);
+		public static Pen PenWeaponSniper => new Pen(Color.FromArgb(50, 255, 255, 51), 1);
+		public static Pen PenWeaponGrenade => new Pen(Color.FromArgb(50, 102, 255, 255), 1);
+		public static Pen PenWeaponZeus => new Pen(Color.FromArgb(50, 204, 153, 255), 1);
+		public static Pen PenWeaponKnife => new Pen(Color.FromArgb(50, 255, 153, 153), 1);
+		public static Pen PenWeaponOther => new Pen(Color.FromArgb(50, 102, 102, 102), 1); // for values not given a specific colour
 	}
 }

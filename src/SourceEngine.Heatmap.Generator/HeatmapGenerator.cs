@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -20,7 +21,7 @@ namespace SourceEngine.Demo.Heatmaps
     public class HeatmapGenerator
     {
         private ImageProcessorExtender imageProcessorExtender = new ImageProcessorExtender();
-        private static HeatmapDataGatherer heatmapDataGatherer = new HeatmapDataGatherer();
+        private static HeatmapTypeDataGatherer heatmapTypeDataGatherer = new HeatmapTypeDataGatherer();
 
         private static string inputDataDirectory;
         private static string heatmapJsonDirectory;
@@ -233,7 +234,7 @@ namespace SourceEngine.Demo.Heatmaps
 
                 using (var graphics = Graphics.FromImage(bmp))
                 {
-                    string outputFilepath = GenerateHeatmapByType(heatmapType, overviewInfo, allStatsList, graphics);
+                    string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allStatsList, graphics);
 
                     graphics.Save();
 
@@ -246,21 +247,11 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static string GenerateHeatmapByType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics) //needs to append to old data rather than replace the image with one demo's data, needs to append onto json file (the same file it should read for this (containing previously used data for the image))
+        private static string GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
-            string outputFilepath = string.Empty;
+            string outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_", heatmapType.ToLower(), ".png");
 
-            switch (heatmapType)
-            {
-                case "tkills":
-                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.Terrorists);
-                    outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_tKills.png");
-                    break;
-                case "ctkills":
-                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
-                    outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_ctKills.png");
-                    break;
-            }
+            heatmapTypeDataGatherer.GenerateByHeatmapType(heatmapType.ToLower(), overviewInfo, allStatsList, graphics);
 
             return outputFilepath;
         }

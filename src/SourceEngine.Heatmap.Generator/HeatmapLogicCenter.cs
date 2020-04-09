@@ -1,68 +1,32 @@
 ﻿using SourceEngine.Demo.Stats.Models;
-using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 
 namespace SourceEngine.Heatmap.Generator
 {
-	public class HeatmapDataGatherer
+	public class HeatmapLogicCenter
 	{
-        public HeatmapDataGatherer()
-        { }
+		public HeatmapLogicCenter()
+		{ }
 
-        public void GenerateKillsHeatmap(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side)
-        {
-            foreach (var allStats in allStatsList)
-            {
-                foreach (var data in allStats.killsStats)
-                {
-                    var killerTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.KillerSteamID);
-                    var victimTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.VictimSteamID);
-
-                    var killerSide = GetSideOfPlayerInKill(allStats, data.Round);
-
-                    if (killerTeam != victimTeam && killerSide == side)
-                    {
-                        PointsData pointsData = new PointsData()
-                        {
-                            DataForPoint1X = data.XPositionKill,
-                            DataForPoint1Y = data.YPositionKill,
-                            DataForPoint2X = data.XPositionDeath,
-                            DataForPoint2Y = data.YPositionDeath,
-                        };
-
-                        LinePoints linePoints = CreateLinePoints(overviewInfo, pointsData);
-
-                        Pen pen = side == Sides.Terrorists
-                                    ? PenColours.PenTerrorist
-                                    : PenColours.PenCounterTerrorist;
-
-                        DrawLine(graphics, pen, linePoints);
-                    }
-                }
-            }
-        }
-
-        private Teams GetTeamOfPlayerInKill(AllStats allStats, int round, long steamId)
+        public Teams GetTeamOfPlayerInKill(AllStats allStats, int round, long steamId)
         {
             return allStats.teamStats.Where(x => x.Round == round).Select(x => x.TeamAlpha.Where(y => y == steamId)).FirstOrDefault().FirstOrDefault() != 0
                         ? Teams.Alpha
                         : Teams.Beta;
         }
 
-        private Sides GetSideOfPlayerInKill(AllStats allStats, int round)
+        public Sides GetSideOfPlayerInKill(AllStats allStats, int round)
         {
             return allStats.roundsStats.Where(x => x.Round == round).Select(x => x.Half.ToLower()).FirstOrDefault() == "first"
                         ? Sides.Terrorists
                         : Sides.CounterTerrorists;
         }
 
-        private LinePoints CreateLinePoints(OverviewInfo overviewInfo, PointsData pointsData)
+        public LinePoints CreateLinePoints(OverviewInfo overviewInfo, PointsData pointsData)
         {
 
             var xPoint1 = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointsData.DataForPoint1X) - overviewInfo.OffsetX) / overviewInfo.Scale));
@@ -78,12 +42,12 @@ namespace SourceEngine.Heatmap.Generator
             };
         }
 
-        private void DrawLine(Graphics graphics, Pen pen, LinePoints linePoints)
+        public void DrawLine(Graphics graphics, Pen pen, LinePoints linePoints)
         {
             graphics.DrawLine(pen, linePoints.Point1, linePoints.Point2);
         }
 
-        /*private void DrawCurve(Graphics graphics, Pen pen, LinePoints linePoints)
+        /*public void DrawCurve(Graphics graphics, Pen pen, LinePoints linePoints)
         {
             var point1 = new PointF() { X = linePoints.Point1X, Y = linePoints.Point1Y };
             var point2 = new PointF() { X = linePoints.Point2X, Y = linePoints.Point2Y };
