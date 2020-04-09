@@ -2,7 +2,7 @@
   "profiles": {
     "SourceEngine.Heatmap.Generator": {
       "commandName": "Project",
-      "commandLineArgs": "-inputdatafilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\parses\\\\\" -heatmapjsonfilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\heatmapjson\\\\\" -outputheatmapfilepath \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\\\\" -heatmapstogenerate \"ctkills\" \"tkills\""
+      "commandLineArgs": "-inputdatadirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\parses\\\\\" -heatmapjsondirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\heatmapjson\\\\\" -outputheatmapdirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\\\\" -heatmapstogenerate \"ctkills\" \"tkills\""
     }
   }
 }

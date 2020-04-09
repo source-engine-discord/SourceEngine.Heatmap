@@ -22,17 +22,17 @@ namespace SourceEngine.Demo.Heatmaps
         private ImageProcessorExtender imageProcessorExtender = new ImageProcessorExtender();
         private static HeatmapDataGatherer heatmapDataGatherer = new HeatmapDataGatherer();
 
-        private static string inputDataFilepath;
-        private static string heatmapJsonFilepath;
-        private static string outputHeatmapFilepath;
+        private static string inputDataDirectory;
+        private static string heatmapJsonDirectory;
+        private static string outputHeatmapDirectory;
 
         private static void helpText()
         {
             Debug.WriteLine("                             ========= HELP ==========\n\n" +
                         "Command line parameters:\n\n" +
-                        "-inputdatafilepath             [path]                              The folder location of the input data json files (parsed demo data)\n" +
-                        "-heatmapjsonfilepath           [path]                              The folder location of the json for the previously created heatmap files\n" +
-                        "-outputheatmapfilepath         [path]                              The folder location to output the generated heatmaps\n" +
+                        "-inputdatadirectory            [path]                              The folder location of the input data json files (parsed demo data)\n" +
+                        "-heatmapjsondirectory          [path]                              The folder location of the json for the previously created heatmap files\n" +
+                        "-outputheatmapdirectory        [path]                              The folder location to output the generated heatmaps\n" +
                         "-heatmapstogenerate            [names (space seperated)]           A list of heatmap key names to generate\n" +
                         "\n"
                 );
@@ -52,24 +52,33 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 var arg = args[i].ToLower();
 
-                if (arg.ToLower() == "-inputdatafilepath")
+                if (arg.ToLower() == "-inputdatadirectory")
                 {
                     if (i < args.Count())
-                        inputDataFilepath = args[i + 1];
+                    {
+                        inputDataDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataDirectory));
+                    }
 
                     i++;
                 }
-                else if (arg.ToLower() == "-heatmapjsonfilepath")
+                else if (arg.ToLower() == "-heatmapjsondirectory")
                 {
                     if (i < args.Count())
-                        heatmapJsonFilepath = args[i + 1];
+                    {
+                        heatmapJsonDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(heatmapJsonDirectory));
+                    }
 
                     i++;
                 }
-                else if (arg.ToLower() == "-outputheatmapfilepath")
+                else if (arg.ToLower() == "-outputheatmapdirectory")
                 {
                     if (i < args.Count())
-                        outputHeatmapFilepath = args[i + 1];
+                    {
+                        outputHeatmapDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(outputHeatmapDirectory));
+                    }
 
                     i++;
                 }
@@ -81,9 +90,13 @@ namespace SourceEngine.Demo.Heatmaps
                         i++;
 
                         if (args[i][0] == '-')
+                        {
                             searching = false;
+                        }
                         else
+                        {
                             heatmapsToGenerate.Add(args[i].ToLower());
+                        }
                     }
                 }
                 else
@@ -93,9 +106,9 @@ namespace SourceEngine.Demo.Heatmaps
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(inputDataFilepath) ||
-                string.IsNullOrWhiteSpace(heatmapJsonFilepath) ||
-                string.IsNullOrWhiteSpace(outputHeatmapFilepath) ||
+            if (string.IsNullOrWhiteSpace(inputDataDirectory) ||
+                string.IsNullOrWhiteSpace(heatmapJsonDirectory) ||
+                string.IsNullOrWhiteSpace(outputHeatmapDirectory) ||
                 heatmapsToGenerate.Count() == 0
             )
             {
@@ -104,11 +117,29 @@ namespace SourceEngine.Demo.Heatmaps
             }
 
             RunHeatmapGenerator(heatmapsToGenerate);
+
+            Console.WriteLine("Finished generating heatmaps.");
+        }
+
+        private static void CreateDirectoryIfDoesntExist(DirectoryInfo directoryInfo)
+        {
+            if (!directoryInfo.Exists)
+            {
+                Directory.CreateDirectory(directoryInfo.FullName);
+            }
+        }
+
+        private static void CreateFileIfDoesntExist(string filepath)
+        {
+            if (!File.Exists(filepath))
+            {
+                File.Create(filepath);
+            }
         }
 
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
         {
-            var parsedDemoFiles = Directory.GetFiles(inputDataFilepath);
+            var parsedDemoFiles = Directory.GetFiles(inputDataDirectory);
             var allStatsList = new List<AllStats>();
             foreach (var filepath in parsedDemoFiles)
             {
@@ -116,7 +147,8 @@ namespace SourceEngine.Demo.Heatmaps
             }
 
             var firstAllStats = allStatsList.First();
-            var heatmapDataFilename = string.Concat(heatmapJsonFilepath, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
+            var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
+            CreateFileIfDoesntExist(heatmapDataFilename);
             var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
 
             //add newly parsed demo data into heatmap data json file
@@ -127,7 +159,14 @@ namespace SourceEngine.Demo.Heatmaps
                 OverwriteJsonFile(heatmapData, heatmapDataFilename);
             }
 
-            Create(heatmapsToGenerate, heatmapData.AllStatsList);
+            if (heatmapData.AllStatsList.Count() > 0)
+            {
+                Create(heatmapsToGenerate, heatmapData.AllStatsList);
+            }
+            else
+            {
+                Console.WriteLine("No AllStats instances (parsed demo data) found.");
+            }
         }
 
         private static OverviewInfo ReadOverviewTxtFile(string filepath)
@@ -215,11 +254,11 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 case "tkills":
                     heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.Terrorists);
-                    outputFilepath = string.Concat(outputHeatmapFilepath, allStatsList.FirstOrDefault().mapInfo.MapName, "_tKills.png");
+                    outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_tKills.png");
                     break;
                 case "ctkills":
                     heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
-                    outputFilepath = string.Concat(outputHeatmapFilepath, allStatsList.FirstOrDefault().mapInfo.MapName, "_ctKills.png");
+                    outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_ctKills.png");
                     break;
             }
 
