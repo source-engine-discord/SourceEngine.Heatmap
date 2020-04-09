@@ -15,32 +15,35 @@ namespace SourceEngine.Heatmap.Generator
         public HeatmapDataGatherer()
         { }
 
-        public void GenerateKillsHeatmap(OverviewInfo overviewInfo, AllStats allStats, Graphics graphics, Sides side)
+        public void GenerateKillsHeatmap(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side)
         {
-            foreach (var data in allStats.killsStats)
+            foreach (var allStats in allStatsList)
             {
-                var killerTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.KillerSteamID);
-                var victimTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.VictimSteamID);
-
-                var killerSide = GetSideOfPlayerInKill(allStats, data.Round);
-
-                if (killerTeam != victimTeam && killerSide == side)
+                foreach (var data in allStats.killsStats)
                 {
-                    PointsData pointsData = new PointsData()
+                    var killerTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.KillerSteamID);
+                    var victimTeam = GetTeamOfPlayerInKill(allStats, data.Round, data.VictimSteamID);
+
+                    var killerSide = GetSideOfPlayerInKill(allStats, data.Round);
+
+                    if (killerTeam != victimTeam && killerSide == side)
                     {
-                        DataForPoint1X = data.XPositionKill,
-                        DataForPoint1Y = data.YPositionKill,
-                        DataForPoint2X = data.XPositionDeath,
-                        DataForPoint2Y = data.YPositionDeath,
-                    };
+                        PointsData pointsData = new PointsData()
+                        {
+                            DataForPoint1X = data.XPositionKill,
+                            DataForPoint1Y = data.YPositionKill,
+                            DataForPoint2X = data.XPositionDeath,
+                            DataForPoint2Y = data.YPositionDeath,
+                        };
 
-                    LinePoints linePoints = CreateLinePoints(overviewInfo, pointsData);
+                        LinePoints linePoints = CreateLinePoints(overviewInfo, pointsData);
 
-                    Pen pen = side == Sides.Terrorists
-                                ? PenColours.PenTerrorist
-                                : PenColours.PenCounterTerrorist;
+                        Pen pen = side == Sides.Terrorists
+                                    ? PenColours.PenTerrorist
+                                    : PenColours.PenCounterTerrorist;
 
-                    DrawLine(graphics, pen, linePoints);
+                        DrawLine(graphics, pen, linePoints);
+                    }
                 }
             }
         }

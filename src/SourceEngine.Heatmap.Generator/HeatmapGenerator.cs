@@ -2,6 +2,7 @@
 using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator;
+using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
 using System;
@@ -107,12 +108,26 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
         {
-            var allStatsList = ReadJsonFiles();
+            var parsedDemoFiles = Directory.GetFiles(inputDataFilepath);
+            var allStatsList = new List<AllStats>();
+            foreach (var filepath in parsedDemoFiles)
+            {
+                allStatsList.Add(ReadJsonFile<AllStats>(typeof(AllStats), filepath));
+            }
 
+            var firstAllStats = allStatsList.First();
+            var heatmapDataFilename = string.Concat(heatmapJsonFilepath, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
+            var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
+
+            //add newly parsed demo data into heatmap data json file
             foreach (var allStats in allStatsList)
             {
-                Create(heatmapsToGenerate, allStats);
+                heatmapData.AllStatsList.RemoveAll(x => x.mapInfo.DemoName == allStats.mapInfo.DemoName); // if the parsed demo stats are not already in the heatmapData list, add them
+                heatmapData.AllStatsList.Add(allStats);
+                OverwriteJsonFile(heatmapData, heatmapDataFilename);
             }
+
+            Create(heatmapsToGenerate, heatmapData.AllStatsList);
         }
 
         private static OverviewInfo ReadOverviewTxtFile(string filepath)
@@ -141,25 +156,35 @@ namespace SourceEngine.Demo.Heatmaps
             return overviewInfo;
         }
 
-        private static List<AllStats> ReadJsonFiles()
+        private static void OverwriteJsonFile(object fileContents, string filepath)
         {
-            var allFilenames = Directory.GetFiles(inputDataFilepath);
-
-            List<AllStats> allStatsList = new List<AllStats>();
-
-            foreach (var filename in allFilenames)
-            {
-                allStatsList.Add(JsonConvert.DeserializeObject<AllStats>(File.ReadAllText(filename)));
-            }
-
-            return allStatsList;
+            File.WriteAllText(filepath, string.Empty);
+            File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
         }
 
-        private static void Create(List<string> heatmapsToGenerate, AllStats allStats)
+        private static T ReadJsonFile<T>(Type type, string filename)
+        {
+            return (T)JsonConvert.DeserializeObject(File.ReadAllText(filename), type);
+        }
+
+        private static List<T> ReadJsonFiles<T>(Type type, string[] filenames)
+        {
+            List<object> jsonContentsList = new List<object>();
+
+            foreach (var filename in filenames)
+            {
+                var json = ReadJsonFile<T>(type, filename);
+                jsonContentsList.Add(json);
+            }
+
+            return (List<T>)(object)jsonContentsList;
+        }
+
+        private static void Create(List<string> heatmapsToGenerate, List<AllStats> allStatsList)
         {
             //imageProcessorExtender.BlurImage(radarLocation, @"C:\Users\jimmy\Desktop\heatmapstuff\bar1.png"); //blur the image
 
-            OverviewInfo overviewInfo = GetOverviewInfo(allStats);
+            OverviewInfo overviewInfo = GetOverviewInfo(allStatsList);
 
             foreach (var heatmapType in heatmapsToGenerate)
             {
@@ -169,7 +194,7 @@ namespace SourceEngine.Demo.Heatmaps
 
                 using (var graphics = Graphics.FromImage(bmp))
                 {
-                    string outputFilepath = GenerateHeatmapByType(heatmapType, overviewInfo, allStats, graphics);
+                    string outputFilepath = GenerateHeatmapByType(heatmapType, overviewInfo, allStatsList, graphics);
 
                     graphics.Save();
 
@@ -182,19 +207,19 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static string GenerateHeatmapByType(string heatmapType, OverviewInfo overviewInfo, AllStats allStats, Graphics graphics) //needs to append to old data rather than replace the image with one demo's data, needs to append onto json file (the same file it should read for this (containing previously used data for the image))
+        private static string GenerateHeatmapByType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics) //needs to append to old data rather than replace the image with one demo's data, needs to append onto json file (the same file it should read for this (containing previously used data for the image))
         {
             string outputFilepath = string.Empty;
 
             switch (heatmapType)
             {
                 case "tkills":
-                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStats, graphics, Sides.Terrorists);
-                    outputFilepath = string.Concat(outputHeatmapFilepath, allStats.mapInfo.MapName, "_tKills.png");
+                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.Terrorists);
+                    outputFilepath = string.Concat(outputHeatmapFilepath, allStatsList.FirstOrDefault().mapInfo.MapName, "_tKills.png");
                     break;
                 case "ctkills":
-                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStats, graphics, Sides.CounterTerrorists);
-                    outputFilepath = string.Concat(outputHeatmapFilepath, allStats.mapInfo.MapName, "_ctKills.png");
+                    heatmapDataGatherer.GenerateKillsHeatmap(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
+                    outputFilepath = string.Concat(outputHeatmapFilepath, allStatsList.FirstOrDefault().mapInfo.MapName, "_ctKills.png");
                     break;
             }
 
@@ -224,9 +249,9 @@ namespace SourceEngine.Demo.Heatmaps
             File.Copy(filepathOriginal, filepathCopy);
         }
 
-        private static OverviewInfo GetOverviewInfo(AllStats allStats)
+        private static OverviewInfo GetOverviewInfo(List<AllStats> allStatsList)
         {
-            return ReadOverviewTxtFile(string.Concat(@"C:\Users\jimmy\Desktop\heatmapstuff\", allStats.mapInfo.MapName, ".txt"));
+            return ReadOverviewTxtFile(string.Concat(@"C:\Users\jimmy\Desktop\heatmapstuff\", allStatsList.FirstOrDefault().mapInfo.MapName, ".txt"));
         }
     }
 }
