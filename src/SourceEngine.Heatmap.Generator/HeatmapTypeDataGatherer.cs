@@ -18,7 +18,7 @@ namespace SourceEngine.Heatmap.Generator
         {
             switch (heatmapType.ToLower())
             {
-                // team sides
+                // kills - team sides
                 case "tkills":
                     GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists);
                     break;
@@ -26,7 +26,7 @@ namespace SourceEngine.Heatmap.Generator
                     GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
                     break;
 
-                // weapon types
+                // kills - weapon types
                 case "pistolkills":
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "pistol");
                     break;
@@ -57,8 +57,10 @@ namespace SourceEngine.Heatmap.Generator
                 case "equipmentkills":
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "equipment");
                     break;
-                case "unknownkills":
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "unknown");
+
+                // kills - random
+                case "wallbangkills":
+                    GenerateHeatmapDataWallbangKills(overviewInfo, allStatsList, graphics);
                     break;
             }
         }
@@ -98,8 +100,6 @@ namespace SourceEngine.Heatmap.Generator
 
         public void GenerateHeatmapDataWeaponClassKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string weaponClass)
         {
-            weaponClass = weaponClass.ToLower();
-
             foreach (var allStats in allStatsList)
             {
                 foreach (var kill in allStats.killsStats)
@@ -131,7 +131,38 @@ namespace SourceEngine.Heatmap.Generator
                             "grenade" => PenColours.PenWeaponGrenade,
                             "zeus" => PenColours.PenWeaponZeus,
                             "knife" => PenColours.PenWeaponKnife,
-                            _ => PenColours.PenWeaponOther,
+                            _ => PenColours.PenWeaponEquipment,
+                        };
+
+                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+                    }
+                }
+            }
+        }
+
+        public void GenerateHeatmapDataWallbangKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                foreach (var kill in allStats.killsStats)
+                {
+                    if (kill.PenetrationsCount > 0)
+                    {
+                        PointsData pointsData = new PointsData()
+                        {
+                            DataForPoint1X = kill.XPositionKill,
+                            DataForPoint1Y = kill.YPositionKill,
+                            DataForPoint2X = kill.XPositionDeath,
+                            DataForPoint2Y = kill.YPositionDeath,
+                        };
+
+                        LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
+
+                        Pen pen = kill.PenetrationsCount switch
+                        {
+                            1 => PenColours.PenWallbangCountOne,
+                            2 => PenColours.PenWallbangCountTwo,
+                            _ => PenColours.PenWallbangCountThreePlus,
                         };
 
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
