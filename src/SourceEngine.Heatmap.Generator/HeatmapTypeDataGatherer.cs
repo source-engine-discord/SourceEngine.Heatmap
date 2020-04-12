@@ -2,8 +2,10 @@
 using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace SourceEngine.Heatmap.Generator
 {
@@ -62,6 +64,11 @@ namespace SourceEngine.Heatmap.Generator
                 case "wallbangkills":
                     GenerateHeatmapDataWallbangKills(overviewInfo, allStatsList, graphics);
                     break;
+
+                // positions - players
+                case "playerpositions":
+                    GenerateHeatmapDataPlayerPositions(overviewInfo, allStatsList, graphics);
+                    break;
             }
         }
 
@@ -104,7 +111,7 @@ namespace SourceEngine.Heatmap.Generator
             {
                 foreach (var kill in allStats.killsStats)
                 {
-                    var killerWeaponClass = kill.WeaponType.ToLower();
+                    var killerWeaponClass = kill.WeaponType?.ToLower();
 
                     var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allStats, kill.Round);
 
@@ -168,6 +175,121 @@ namespace SourceEngine.Heatmap.Generator
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
                     }
                 }
+            }
+        }
+
+        public void GenerateHeatmapDataPlayerPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                var playerSteamIds = allStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
+
+                foreach (var round in allStats.playerPositionsStats)
+                {
+                    foreach (var player in playerSteamIds)
+                    {
+                        var playerPositionsInRound = new List<PlayerPositionBySteamID>();
+
+                        foreach (var timeInRound in round.PlayerPositionByTimeInRound)
+                        {
+                            var playerPos = timeInRound.PlayerPositionBySteamID.Where(x => x.SteamID == player).FirstOrDefault();
+
+                            if (playerPos != null) // if no data for this specific second
+                            {
+                                playerPositionsInRound.Add(playerPos);
+                            }
+                            else
+                            {
+                                var mostRecent = (
+                                    from    roundList in allStats.playerPositionsStats
+                                    from    timeInRoundList in roundList.PlayerPositionByTimeInRound
+                                    from    playerList in timeInRoundList.PlayerPositionBySteamID
+                                    where   roundList.Round == round.Round &&
+                                            timeInRoundList.TimeInRound < timeInRound.TimeInRound &&
+                                            playerList.SteamID == player
+                                    orderby timeInRoundList.TimeInRound descending
+                                    select  playerList
+                                ).FirstOrDefault();
+                                
+                                var closestUpcoming = (
+                                    from    roundList in allStats.playerPositionsStats
+                                    from    timeInRoundList in roundList.PlayerPositionByTimeInRound
+                                    from    playerList in timeInRoundList.PlayerPositionBySteamID
+                                    where   roundList.Round == round.Round &&
+                                            timeInRoundList.TimeInRound > timeInRound.TimeInRound &&
+                                            playerList.SteamID == player
+                                    orderby timeInRoundList.TimeInRound ascending
+                                    select  playerList
+                                ).FirstOrDefault();
+
+
+                                if (closestUpcoming != null)
+                                {
+                                    var newPlayerPositionBySteamID = new PlayerPositionBySteamID();
+
+                                    if (mostRecent != null)
+                                    {
+                                        var playerPosPrevUpcomingList = new List<PlayerPositionBySteamID>() { mostRecent, closestUpcoming };
+
+                                        newPlayerPositionBySteamID = new PlayerPositionBySteamID()
+                                        {
+                                            SteamID = player,
+                                            TeamSide = closestUpcoming.TeamSide,
+                                            XPosition = playerPosPrevUpcomingList.Average(x => x.XPosition),
+                                            YPosition = playerPosPrevUpcomingList.Average(x => x.YPosition),
+                                            ZPosition = playerPosPrevUpcomingList.Average(x => x.ZPosition),
+                                        };
+                                    }
+                                    else
+                                    {
+                                        newPlayerPositionBySteamID = new PlayerPositionBySteamID()
+                                        {
+                                            SteamID = player,
+                                            TeamSide = closestUpcoming.TeamSide,
+                                            XPosition = closestUpcoming.XPosition,
+                                            YPosition = closestUpcoming.YPosition,
+                                            ZPosition = closestUpcoming.ZPosition,
+                                        };
+                                    }
+
+                                    playerPositionsInRound.Add(newPlayerPositionBySteamID);
+                                }
+                            }
+                        }
+
+                        // draw lines
+                        for (int i = 1; i < playerPositionsInRound.Count(); i++)
+                        {
+                            /*var side = allStats.teamStats.Where(x => x.Round == round.Round &&
+                                            (x.TeamAlpha.Any(x => x == player) && x.Side.ToLower() == "terrorist" ||
+                                             x.TeamBravo.Any(x => x == player) && x.Side.ToLower() == "terrorist"))
+                                                ? Sides.Terrorists
+                                                : Sides.CounterTerrorists;*/
+
+                            PointsData pointsData = new PointsData()
+                            {
+                                DataForPoint1X = playerPositionsInRound[i].XPosition,
+                                DataForPoint1Y = playerPositionsInRound[i].YPosition,
+                                DataForPoint2X = playerPositionsInRound[i-1].XPosition,
+                                DataForPoint2Y = playerPositionsInRound[i-1].YPosition,
+                            };
+
+                            LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
+
+                            Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "terrorist"
+                                        ? PenColours.PenTerrorist
+                                        : PenColours.PenCounterTerrorist;
+
+                            /*Pen pen = side == Sides.Terrorists
+                                        ? PenColours.PenTerrorist
+                                        : PenColours.PenCounterTerrorist;*/
+
+                            heatmapLogicCenter.DrawCurve(graphics, pen, linePoints);
+                        }
+                    }
+                }
+
+                Console.WriteLine("Finished parsing player positions data for one demo.");
             }
         }
     }

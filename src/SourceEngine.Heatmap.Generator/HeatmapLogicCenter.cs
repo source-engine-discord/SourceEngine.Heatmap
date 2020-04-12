@@ -47,10 +47,10 @@ namespace SourceEngine.Heatmap.Generator
             graphics.DrawLine(pen, linePoints.Point1, linePoints.Point2);
         }
 
-        /*public void DrawCurve(Graphics graphics, Pen pen, LinePoints linePoints)
+        public void DrawCurve(Graphics graphics, Pen pen, LinePoints linePoints)
         {
-            var point1 = new PointF() { X = linePoints.Point1X, Y = linePoints.Point1Y };
-            var point2 = new PointF() { X = linePoints.Point2X, Y = linePoints.Point2Y };
+            var point1 = new PointF() { X = linePoints.Point1.X, Y = linePoints.Point1.Y }; // are these 3 lines even needed ????
+            var point2 = new PointF() { X = linePoints.Point2.X, Y = linePoints.Point2.Y };
 
             var points = new PointF[] { point1, point2 };
 
@@ -65,7 +65,7 @@ namespace SourceEngine.Heatmap.Generator
             }
             */
 
-        /*    graphics.DrawCurve(pen, points);
-        }*/
+            graphics.DrawCurve(pen, points);
+        }
     }
 }

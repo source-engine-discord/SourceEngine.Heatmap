@@ -152,6 +152,11 @@ namespace SourceEngine.Demo.Heatmaps
             CreateFileIfDoesntExist(heatmapDataFilename);
             var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
 
+            if (heatmapData == null)
+            {
+                heatmapData = new MapHeatmapData() { AllStatsList = new List<AllStats>() };
+            }
+
             //add newly parsed demo data into heatmap data json file
             foreach (var allStats in allStatsList)
             {
