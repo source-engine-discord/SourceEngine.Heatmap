@@ -134,7 +134,7 @@ namespace SourceEngine.Demo.Heatmaps
         {
             if (!File.Exists(filepath))
             {
-                File.Create(filepath);
+                File.Create(filepath).Close();
             }
         }
 
