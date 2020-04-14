@@ -145,6 +145,8 @@ namespace SourceEngine.Demo.Heatmaps
             foreach (var filepath in parsedDemoFiles)
             {
                 allStatsList.Add(ReadJsonFile<AllStats>(typeof(AllStats), filepath));
+
+                Console.WriteLine("Finished reading allStats for: " + filepath);
             }
 
             var firstAllStats = allStatsList.First();

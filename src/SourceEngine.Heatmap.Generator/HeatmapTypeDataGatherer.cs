@@ -1,4 +1,5 @@
-﻿using SourceEngine.Demo.Stats.Models;
+﻿using SourceEngine.Demo.Parser;
+using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
@@ -68,6 +69,9 @@ namespace SourceEngine.Heatmap.Generator
                 // positions - players by team
                 case "playerpositionsbyteam":
                     GenerateHeatmapDataPlayerPositions(overviewInfo, allStatsList, graphics);
+                    break;
+                case "campingspotsbyteam":
+                    GenerateHeatmapDataCampingSpotPositions(overviewInfo, allStatsList, graphics);
                     break;
                 case "firstkillpositionsbyteam":
                     GenerateHeatmapDataFirstKillPositions(overviewInfo, allStatsList, graphics);
@@ -293,6 +297,49 @@ namespace SourceEngine.Heatmap.Generator
                 }
 
                 Console.WriteLine("Finished parsing player positions data for one demo.");
+            }
+        }
+
+        public void GenerateHeatmapDataCampingSpotPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                var playerSteamIds = allStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
+
+                foreach (var round in allStats.playerPositionsStats)
+                {
+                    foreach (var player in playerSteamIds)
+                    {
+                        var numOfSecondsCamped = 0; // used for camping positions heatmap
+                        var campingPosition = new Vector(); // used for camping positions heatmap
+
+                        foreach (var timeInRound in round.PlayerPositionByTimeInRound)
+                        {
+                            var playerPos = timeInRound.PlayerPositionBySteamID.Where(x => x.SteamID == player).FirstOrDefault();
+
+                            if (playerPos != null) // if no data for this specific second
+                            {
+                                numOfSecondsCamped = (campingPosition.X == (int)playerPos.XPosition && campingPosition.Y == (int)playerPos.YPosition)
+                                                        ? numOfSecondsCamped + 1
+                                                        : 0;
+                                campingPosition = new Vector() { X = (int)playerPos.XPosition, Y = (int)playerPos.YPosition, Z = (int)playerPos.ZPosition };
+
+                                if (numOfSecondsCamped == 10) // if camped for x seconds, render the position (only done once until player moves)
+                                {
+                                    PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, campingPosition);
+
+                                    Pen pen = playerPos.TeamSide.ToLower() == "terrorist"
+                                                ? PenColours.PenTerrorist
+                                                : PenColours.PenCounterTerrorist;
+
+                                    heatmapLogicCenter.DrawCircle(graphics, pen, singlePoint, 10);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Console.WriteLine("Finished parsing player camping spots data for one demo.");
             }
         }
 

@@ -33,6 +33,7 @@ Heatmap Types
 	
 	// Positions - players by team
 	playerpositionsbyteam
+	campingspotsbyteam
 	firstkillpositionsbyteam
 ```
 

@@ -1,4 +1,5 @@
-﻿using SourceEngine.Demo.Stats.Models;
+﻿using SourceEngine.Demo.Parser;
+using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
 using System;
@@ -26,6 +27,13 @@ namespace SourceEngine.Heatmap.Generator
                         : Sides.CounterTerrorists;
         }
 
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported.
+        /// Returns two points that are used to join a line between.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointsData"></param>
+        /// <returns></returns>
         public LinePoints CreateLinePoints(OverviewInfo overviewInfo, PointsData pointsData)
         {
             var xPoint1 = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointsData.DataForPoint1X) - overviewInfo.OffsetX) / overviewInfo.Scale));
@@ -38,6 +46,25 @@ namespace SourceEngine.Heatmap.Generator
             {
                 Point1 = new PointF() { X = xPoint1, Y = yPoint1 },
                 Point2 = new PointF() { X = xPoint2, Y = yPoint2 },
+            };
+        }
+
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported.
+        /// Returns a single point.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointData"></param>
+        /// <returns></returns>
+        public PointF CreateSinglePoint(OverviewInfo overviewInfo, Vector pointData)
+        {
+            var xPoint = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointData.X) - overviewInfo.OffsetX) / overviewInfo.Scale));
+            var yPoint = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointData.Y) - overviewInfo.OffsetY) / overviewInfo.Scale));
+
+            return new PointF()
+            {
+                X = xPoint,
+                Y = yPoint,
             };
         }
 
@@ -65,6 +92,13 @@ namespace SourceEngine.Heatmap.Generator
             */
 
             graphics.DrawCurve(pen, points);
+        }
+
+        public void DrawCircle(Graphics graphics, Pen pen, PointF point, int radius = 1)
+        {
+            RectangleF rect = new RectangleF(point.X, point.Y, radius, radius);
+
+            graphics.DrawEllipse(pen, rect);
         }
     }
 }
