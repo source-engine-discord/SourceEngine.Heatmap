@@ -65,9 +65,12 @@ namespace SourceEngine.Heatmap.Generator
                     GenerateHeatmapDataWallbangKills(overviewInfo, allStatsList, graphics);
                     break;
 
-                // positions - players
-                case "playerpositions":
+                // positions - players by team
+                case "playerpositionsbyteam":
                     GenerateHeatmapDataPlayerPositions(overviewInfo, allStatsList, graphics);
+                    break;
+                case "firstkillpositionsbyteam":
+                    GenerateHeatmapDataFirstKillPositions(overviewInfo, allStatsList, graphics);
                     break;
             }
         }
@@ -290,6 +293,34 @@ namespace SourceEngine.Heatmap.Generator
                 }
 
                 Console.WriteLine("Finished parsing player positions data for one demo.");
+            }
+        }
+
+        public void GenerateHeatmapDataFirstKillPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                foreach (var round in allStats.firstDamageStats)
+                {
+                    foreach (var firstDamage in round.FirstDamageToEnemyByPlayers)
+                    {
+                        PointsData pointsData = new PointsData()
+                        {
+                            DataForPoint1X = firstDamage.XPositionShooter,
+                            DataForPoint1Y = firstDamage.YPositionShooter,
+                            DataForPoint2X = firstDamage.XPositionVictim,
+                            DataForPoint2Y = firstDamage.YPositionVictim,
+                        };
+
+                        LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
+
+                        Pen pen = firstDamage.TeamSideShooter.ToLower() == "terrorist"
+                                        ? PenColours.PenTerrorist
+                                        : PenColours.PenCounterTerrorist;
+
+                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+                    }
+                }
             }
         }
     }

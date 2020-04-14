@@ -28,7 +28,6 @@ namespace SourceEngine.Heatmap.Generator
 
         public LinePoints CreateLinePoints(OverviewInfo overviewInfo, PointsData pointsData)
         {
-
             var xPoint1 = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointsData.DataForPoint1X) - overviewInfo.OffsetX) / overviewInfo.Scale));
             var yPoint1 = Math.Abs(Convert.ToInt32((Convert.ToSingle(pointsData.DataForPoint1Y) - overviewInfo.OffsetY) / overviewInfo.Scale));
 

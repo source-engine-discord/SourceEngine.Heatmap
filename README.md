@@ -27,11 +27,17 @@ Heatmap Types
 	zeuskills
 	knifekills
 	equipmentkills
-	unknownkills
+	
+	// Kills - random
+	wallbangkills
+	
+	// Positions - players by team
+	playerpositionsbyteam
+	firstkillpositionsbyteam
 ```
 
 Example:
 
 ```
--inputdatadirectory "foldername" -heatmapjsondirectory "foldername" -outputheatmapdirectory "foldername" -heatmapstogenerate ctkills tkills
+-inputdatadirectory "foldername" -heatmapjsondirectory "foldername" -outputheatmapdirectory "foldername" -heatmapstogenerate ctkills tkills assaultriflekills
 ```
