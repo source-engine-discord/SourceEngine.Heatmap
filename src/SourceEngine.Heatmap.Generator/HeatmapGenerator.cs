@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator;
@@ -199,26 +200,60 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static OverviewInfo ReadOverviewTxtFile(string filepath)
         {
-            var overviewInfo = new OverviewInfo();
-
-            var regexStatement = @"\-?\d+.+\d";
-
             string[] lines = File.ReadAllLines(filepath);
-            foreach (var line in lines)
+
+            // remove map name line
+            lines[0] = string.Empty;
+
+            // remove tabs
+            for (int i = 0; i < lines.Count(); i++)
             {
-                if (line.ToLower().Contains("scale"))
+                lines[i] = Regex.Replace(lines[i], @"\t", "");
+            }
+
+            // remove blank entries
+            lines = lines.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+            // add colons
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                if (lines.Count() > i + 1)
                 {
-                    overviewInfo.Scale = float.Parse(Regex.Match(line, regexStatement).Value);
-                }
-                else if (line.ToLower().Contains("pos_x"))
-                {
-                    overviewInfo.OffsetX = float.Parse(Regex.Match(line, regexStatement).Value);
-                }
-                else if (line.ToLower().Contains("pos_y"))
-                {
-                    overviewInfo.OffsetY = float.Parse(Regex.Match(line, regexStatement).Value);
+                    var quotesCount = 0;
+
+                    for (int j = 0; j < lines[i].Count(); j++)
+                    {
+                        if (lines[i][j] == '\"')
+                        {
+                            quotesCount++;
+
+                            if (quotesCount == 2)
+                            {
+                                lines[i] = lines[i].Substring(0, j + 1) + ":" + lines[i].Substring(j + 1);
+
+                                if (lines[i + 1] != "{" && lines[i + 1] != "}")
+                                {
+                                    lines[i] += ",";
+                                }
+
+                                break;
+                            }
+                        }
+                        else if ((lines[i] == "{" && lines[i + 1] == "}") ||
+                                (lines[i] == "}" && lines.Count() > i + 1 && !string.IsNullOrWhiteSpace(lines[i + 1]))
+                        )
+                        {
+                            lines[i] += ",";
+                        }
+                    }
                 }
             }
+
+            // make it into one json string
+            var overviewJson = string.Join(string.Empty, lines);
+
+            JObject jObject = JObject.Parse(overviewJson);
+            OverviewInfo overviewInfo = jObject.ToObject<OverviewInfo>();
 
             return overviewInfo;
         }
