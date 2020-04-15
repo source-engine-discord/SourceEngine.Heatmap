@@ -41,5 +41,5 @@ Heatmap Types
 Example:
 
 ```
--inputdatadirectory "foldername" -heatmapjsondirectory "foldername" -outputheatmapdirectory "foldername" -heatmapstogenerate ctkills tkills assaultriflekills
+-inputdatadirectory "foldername" -inputdatafilepathsfile "filepathsTxtFile" -heatmapjsondirectory "foldername" -outputheatmapdirectory "foldername" -heatmapstogenerate ctkills tkills assaultriflekills
 ```
