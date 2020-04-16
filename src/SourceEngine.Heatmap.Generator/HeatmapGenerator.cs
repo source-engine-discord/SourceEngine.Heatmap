@@ -185,7 +185,7 @@ namespace SourceEngine.Demo.Heatmaps
 
             if (heatmapData.AllStatsList.Count() > 0)
             {
-                Create(heatmapsToGenerate, heatmapData.AllStatsList);
+                CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
             }
             else
             {
@@ -282,7 +282,7 @@ namespace SourceEngine.Demo.Heatmaps
             return (List<T>)(object)jsonContentsList;
         }
 
-        private static void Create(List<string> heatmapsToGenerate, List<AllStats> allStatsList)
+        private static void CreateHeatmaps(List<string> heatmapsToGenerate, List<AllStats> allStatsList)
         {
             //imageProcessorExtender.BlurImage(radarLocation, @"C:\Users\jimmy\Desktop\heatmapstuff\bar1.png"); //blur the image
 
@@ -291,8 +291,6 @@ namespace SourceEngine.Demo.Heatmaps
             foreach (var heatmapType in heatmapsToGenerate)
             {
                 Image bmp = new Bitmap(1024, 1024);
-                var bmpOriginalWidth = bmp.Width;
-                var bmpOriginalHeight = bmp.Height;
 
                 using (var graphics = Graphics.FromImage(bmp))
                 {
@@ -300,7 +298,42 @@ namespace SourceEngine.Demo.Heatmaps
 
                     graphics.Save();
 
-                    SaveImagePng(bmp, outputFilepath);
+                    if (heatmapType == HeatmapTypeNames.BombPlantLocations)
+                    {
+                        var aSiteOutputFilepath = outputFilepath + "_asite.png";
+                        var aSiteOutputOverviewFilepath = outputFilepath + "_asite_overview.png";
+                        var bSiteOutputFilepath = outputFilepath + "_bsite.png";
+                        var bSiteOutputOverviewFilepath = outputFilepath + "_bsite_overview.png";
+
+                        var bombsiteA = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
+                        var bombsiteB = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
+
+                        PointsData pointsDataASite = new PointsData()
+                        {
+                            DataForPoint1X = bombsiteA.XPositionMin,
+                            DataForPoint1Y = bombsiteA.YPositionMin,
+                            DataForPoint2X = bombsiteA.XPositionMax,
+                            DataForPoint2Y = bombsiteA.YPositionMax,
+                        };
+                        PointsData pointsDataBSite = new PointsData()
+                        {
+                            DataForPoint1X = bombsiteB.XPositionMin,
+                            DataForPoint1Y = bombsiteB.YPositionMin,
+                            DataForPoint2X = bombsiteB.XPositionMax,
+                            DataForPoint2Y = bombsiteB.YPositionMax,
+                        };
+
+                        SaveImagePngObjective(overviewInfo, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
+                        SaveImagePngObjective(overviewInfo, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
+
+                        /*outputFilepath += ".png";
+                        SaveImagePng(bmp, outputFilepath);*/
+                    }
+                    else
+                    {
+                        outputFilepath += ".png";
+                        SaveImagePng(bmp, outputFilepath);
+                    }
 
                     bmp = new Bitmap(1024, 1024);
                 }
@@ -311,7 +344,7 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static string GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
-            string outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_", heatmapType.ToLower(), ".png");
+            string outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_", heatmapType.ToLower());
 
             heatmapTypeDataGatherer.GenerateByHeatmapType(heatmapType.ToLower(), overviewInfo, allStatsList, graphics);
 
@@ -321,6 +354,35 @@ namespace SourceEngine.Demo.Heatmaps
         private static void SaveImagePng(Image img, string filepath)
         {
             img.Save(filepath, ImageFormat.Png);
+        }
+
+        private static void SaveImagePngObjective(OverviewInfo overviewInfo, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
+        {
+            Bitmap overviewImage = new Bitmap(@"C:\Users\jimmy\Desktop\heatmapstuff\de_mutiny_radar.png"); ///////////////////////////////////////////////
+            //overviewImage.SetResolution(96, 96);
+
+            var xPoint1 = (Convert.ToSingle(pointsData.DataForPoint1X) - overviewInfo.OffsetX) / overviewInfo.Scale;
+            var yPoint1 = (Convert.ToSingle(pointsData.DataForPoint1Y) - overviewInfo.OffsetY) / overviewInfo.Scale;
+            var xPoint2 = (Convert.ToSingle(pointsData.DataForPoint2X) - overviewInfo.OffsetX) / overviewInfo.Scale;
+            var yPoint2 = (Convert.ToSingle(pointsData.DataForPoint2Y) - overviewInfo.OffsetY) / overviewInfo.Scale;
+
+            var xPointLeft = xPoint1 <= xPoint2 ? Math.Abs(xPoint1) : Math.Abs(xPoint2);
+            var yPointTop = yPoint1 <= yPoint2 ? Math.Abs(yPoint2) : Math.Abs(yPoint1);
+            var xPointRight = xPoint1 <= xPoint2 ? Math.Abs(xPoint2) : Math.Abs(xPoint1);
+            var yPointBottom = yPoint1 <= yPoint2 ? Math.Abs(yPoint1) : Math.Abs(yPoint2);
+
+            var marginX = (xPointRight - xPointLeft) / 10;
+            var marginY = (yPointTop - yPointBottom) / 10;
+            Rectangle cropObjective = Rectangle.FromLTRB((int)(xPointLeft - marginX), (int)(yPointTop + marginY), (int)(xPointRight + marginX), (int)(yPointBottom - marginY));
+
+            Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
+            Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
+
+            //bmpCropASite.SetResolution(1024, 1024);
+            //bmpCropBSite.SetResolution(1024, 1024);
+
+            SaveImagePng(bmpCropObjective, filepathObjective);
+            SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
         }
 
         private static void DeleteFileIfExists(string filepath)

@@ -94,11 +94,19 @@ namespace SourceEngine.Heatmap.Generator
             graphics.DrawCurve(pen, points);
         }
 
-        public void DrawCircle(Graphics graphics, Pen pen, PointF point, int radius = 1)
+        public void DrawCircle(Graphics graphics, Pen pen, PointF point, int diameter = 10)
         {
-            RectangleF rect = new RectangleF(point.X, point.Y, radius, radius);
+            RectangleF rect = new RectangleF(point.X - (diameter / 2), point.Y - (diameter / 2), diameter, diameter);
 
             graphics.DrawEllipse(pen, rect);
+        }
+
+        public void DrawFilledCircle(Graphics graphics, SolidBrush brush, Pen pen, PointF point, int diameter = 10)
+        {
+            RectangleF rect = new RectangleF(point.X - (diameter / 2), point.Y - (diameter / 2), diameter, diameter);
+
+            graphics.DrawEllipse(pen, rect);
+            graphics.FillEllipse(brush, rect);
         }
     }
 }

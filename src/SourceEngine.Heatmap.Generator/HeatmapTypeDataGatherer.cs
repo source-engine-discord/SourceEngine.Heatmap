@@ -22,59 +22,64 @@ namespace SourceEngine.Heatmap.Generator
             switch (heatmapType.ToLower())
             {
                 // kills - team sides
-                case "tkills":
+                case HeatmapTypeNames.TKills:
                     GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists);
                     break;
-                case "ctkills":
+                case HeatmapTypeNames.CTKills:
                     GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
                     break;
 
                 // kills - weapon types
-                case "pistolkills":
+                case HeatmapTypeNames.PistolKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "pistol");
                     break;
-                case "smgkills":
+                case HeatmapTypeNames.SmgKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "smg");
                     break;
-                case "lmgkills":
+                case HeatmapTypeNames.LmgKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "lmg");
                     break;
-                case "shotgunkills":
+                case HeatmapTypeNames.ShotgunKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "shotgun");
                     break;
-                case "assaultriflekills":
+                case HeatmapTypeNames.AssaultRifleKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "assaultrifle");
                     break;
-                case "sniperkills":
+                case HeatmapTypeNames.SniperKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "sniper");
                     break;
-                case "grenadekills":
+                case HeatmapTypeNames.GrenadeKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "grenade");
                     break;
-                case "zeuskills":
+                case HeatmapTypeNames.ZeusKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "zeus");
                     break;
-                case "knifekills":
+                case HeatmapTypeNames.KnifeKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "knife");
                     break;
-                case "equipmentkills":
+                case HeatmapTypeNames.EquipmentKills:
                     GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "equipment");
                     break;
 
                 // kills - random
-                case "wallbangkills":
+                case HeatmapTypeNames.WallbangKills:
                     GenerateHeatmapDataWallbangKills(overviewInfo, allStatsList, graphics);
                     break;
 
                 // positions - players by team
-                case "playerpositionsbyteam":
+                case HeatmapTypeNames.PlayerPositionsByTeam:
                     GenerateHeatmapDataPlayerPositions(overviewInfo, allStatsList, graphics);
                     break;
-                case "campingspotsbyteam":
+                case HeatmapTypeNames.CampingSpotsByTeam:
                     GenerateHeatmapDataCampingSpotPositions(overviewInfo, allStatsList, graphics);
                     break;
-                case "firstkillpositionsbyteam":
+                case HeatmapTypeNames.FirstKillPositionsByTeam:
                     GenerateHeatmapDataFirstKillPositions(overviewInfo, allStatsList, graphics);
+                    break;
+
+                // positions - bombsites
+                case HeatmapTypeNames.BombPlantLocations:
+                    GenerateHeatmapDataBombPlantPositions(overviewInfo, allStatsList, graphics);
                     break;
             }
         }
@@ -107,6 +112,8 @@ namespace SourceEngine.Heatmap.Generator
                                     : PenColours.PenCounterTerrorist;
 
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+
+                        pen.Dispose();
                     }
                 }
             }
@@ -149,6 +156,8 @@ namespace SourceEngine.Heatmap.Generator
                         };
 
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+
+                        pen.Dispose();
                     }
                 }
             }
@@ -180,6 +189,8 @@ namespace SourceEngine.Heatmap.Generator
                         };
 
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+
+                        pen.Dispose();
                     }
                 }
             }
@@ -242,9 +253,9 @@ namespace SourceEngine.Heatmap.Generator
                                         {
                                             SteamID = player,
                                             TeamSide = closestUpcoming.TeamSide,
-                                            XPosition = playerPosPrevUpcomingList.Average(x => x.XPosition),
-                                            YPosition = playerPosPrevUpcomingList.Average(x => x.YPosition),
-                                            ZPosition = playerPosPrevUpcomingList.Average(x => x.ZPosition),
+                                            XPosition = (int)playerPosPrevUpcomingList.Average(x => x.XPosition),
+                                            YPosition = (int)playerPosPrevUpcomingList.Average(x => x.YPosition),
+                                            ZPosition = (int)playerPosPrevUpcomingList.Average(x => x.ZPosition),
                                         };
                                     }
                                     else
@@ -292,6 +303,8 @@ namespace SourceEngine.Heatmap.Generator
                                         : PenColours.PenCounterTerrorist;*/
 
                             heatmapLogicCenter.DrawCurve(graphics, pen, linePoints);
+
+                            pen.Dispose();
                         }
                     }
                 }
@@ -328,11 +341,17 @@ namespace SourceEngine.Heatmap.Generator
                                 {
                                     PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, campingPosition);
 
+                                    SolidBrush brush = playerPos.TeamSide.ToLower() == "terrorist"
+                                                ? BrushColours.BrushTerrorist
+                                                : BrushColours.BrushCounterTerrorist;
                                     Pen pen = playerPos.TeamSide.ToLower() == "terrorist"
                                                 ? PenColours.PenTerrorist
                                                 : PenColours.PenCounterTerrorist;
 
-                                    heatmapLogicCenter.DrawCircle(graphics, pen, singlePoint, 10);
+                                    heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 10);
+
+                                    brush.Dispose();
+                                    pen.Dispose();
                                 }
                             }
                         }
@@ -366,6 +385,32 @@ namespace SourceEngine.Heatmap.Generator
                                         : PenColours.PenCounterTerrorist;
 
                         heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+
+                        pen.Dispose();
+                    }
+                }
+            }
+        }
+
+        public void GenerateHeatmapDataBombPlantPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                foreach (var round in allStats.roundsStats)
+                {
+                    if (round.BombsitePlantedAt != null && round.BombPlantPositionX != null && round.BombPlantPositionY != null && round.BombPlantPositionZ != null)
+                    {
+                        var bombPlantLocation = new Vector() { X = (int)round.BombPlantPositionX, Y = (int)round.BombPlantPositionY, Z = (int)round.BombPlantPositionZ };
+
+                        PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, bombPlantLocation);
+
+                        SolidBrush brush = BrushColours.BrushBombplants;
+                        Pen pen = PenColours.PenBombplants;
+
+                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+
+                        brush.Dispose();
+                        pen.Dispose();
                     }
                 }
             }

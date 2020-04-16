@@ -5,8 +5,8 @@ namespace SourceEngine.Heatmap.Generator.Constants
 	public class PenColours
 	{
 		// Team Sides
-		public static Pen PenTerrorist => new Pen(Color.FromArgb(10, 204, 102, 0), 1);
-		public static Pen PenCounterTerrorist => new Pen(Color.FromArgb(10, 51, 153, 255), 1);
+		public static Pen PenTerrorist => new Pen(Color.FromArgb(100, 204, 102, 0), 1);
+		public static Pen PenCounterTerrorist => new Pen(Color.FromArgb(100, 51, 153, 255), 1);
 
 		// Weapon Types
 		public static Pen PenWeaponPistol => new Pen(Color.FromArgb(50, 0, 255, 0), 1);
@@ -24,5 +24,8 @@ namespace SourceEngine.Heatmap.Generator.Constants
 		public static Pen PenWallbangCountOne => new Pen(Color.FromArgb(50, 0, 255, 0), 1);
 		public static Pen PenWallbangCountTwo => new Pen(Color.FromArgb(50, 0, 0, 255), 1);
 		public static Pen PenWallbangCountThreePlus => new Pen(Color.FromArgb(50, 255, 0, 0), 1);
+
+		// Bombsites
+		public static Pen PenBombplants => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
 	}
 }

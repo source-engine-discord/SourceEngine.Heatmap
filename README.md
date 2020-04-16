@@ -36,6 +36,9 @@ Heatmap Types
 	playerpositionsbyteam
 	campingspotsbyteam
 	firstkillpositionsbyteam
+	
+	// positions - bombsites
+	bombplantlocations
 ```
 
 Example:
