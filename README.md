@@ -13,6 +13,9 @@ Outputs heatmap overlay images and JSON information files from CS:GO parsed demo
 
 Heatmap Types
 ```
+	// Generate all heatmaps
+	all
+
 	// Kills - Team Sides
 	tkills
 	ctkills
