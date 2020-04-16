@@ -28,5 +28,7 @@
 
 		// positions - bombsites
 		public const string BombPlantLocations = "bombplantlocations";
+
+		public HeatmapTypeNames() { }
 	}
 }

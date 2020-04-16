@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
@@ -185,6 +185,19 @@ namespace SourceEngine.Demo.Heatmaps
 
             if (heatmapData.AllStatsList.Count() > 0)
             {
+                if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
+                {
+                    heatmapsToGenerate = new List<string>();
+
+                    var instance = new HeatmapTypeNames();
+                    heatmapsToGenerate = typeof(HeatmapTypeNames)
+                                             .GetFields()
+                                             .Select(field => field.GetValue(instance))
+                                             .Cast<string>()
+                                             .ToList();
+
+                }
+
                 CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
             }
             else
