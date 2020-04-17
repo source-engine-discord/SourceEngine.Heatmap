@@ -20,9 +20,13 @@ Heatmap Types
 	tkills
 	tkillsbeforebombplant
 	tkillsafterbombplant
+    tkillsbeforehostagetaken
+    tkillsafterhostagetaken
 	ctkills
 	ctkillsbeforebombplant
 	ctkillsafterbombplant
+    ctkillsbeforehostagetaken
+    ctkillsafterhostagetaken
 	
 	// Kills - Weapon Types
 	pistolkills

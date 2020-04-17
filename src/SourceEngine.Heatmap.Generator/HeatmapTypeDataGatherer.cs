@@ -23,22 +23,34 @@ namespace SourceEngine.Heatmap.Generator
             {
                 // kills - team sides
                 case HeatmapTypeNames.TKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, false, false);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKills);
                     break;
                 case HeatmapTypeNames.TKillsBeforeBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, true, false);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeBombplant);
                     break;
                 case HeatmapTypeNames.TKillsAfterBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, false, true);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterBombplant);
+                    break;
+                case HeatmapTypeNames.TKillsBeforeHostageTaken:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeHostageTaken);
+                    break;
+                case HeatmapTypeNames.TKillsAfterHostageTaken:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterHostageTaken);
                     break;
                 case HeatmapTypeNames.CTKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, false, false);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKills);
                     break;
                 case HeatmapTypeNames.CTKillsBeforeBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, true, false);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeBombplant);
                     break;
                 case HeatmapTypeNames.CTKillsAfterBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, false, true);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterBombplant);
+                    break;
+                case HeatmapTypeNames.CTKillsBeforeHostageTaken:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeHostageTaken);
+                    break;
+                case HeatmapTypeNames.CTKillsAfterHostageTaken:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterHostageTaken);
                     break;
 
                 // kills - weapon types
@@ -99,7 +111,7 @@ namespace SourceEngine.Heatmap.Generator
             }
         }
 
-        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side, bool beforeBombPlantOnly, bool afterBombPlantOnly)
+        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side, string heatmapTypeName)
         {
             foreach (var allStats in allStatsList)
             {
@@ -110,8 +122,20 @@ namespace SourceEngine.Heatmap.Generator
                     if (round != null)
                     {
                         var bombPlanted = (round.TimeInRoundPlanted != null && round.TimeInRoundPlanted > 0 && round.TimeInRoundPlanted <= kill.TimeInRound) ? true : false;
+                        var hostageRescuedA = (round.TimeInRoundRescuedHostageA != null && round.TimeInRoundRescuedHostageA > 0 && round.TimeInRoundRescuedHostageA <= kill.TimeInRound) ? true : false;
+                        var hostageRescuedB = (round.TimeInRoundRescuedHostageB != null && round.TimeInRoundRescuedHostageB > 0 && round.TimeInRoundRescuedHostageB <= kill.TimeInRound) ? true : false;
                         
-                        if ((!beforeBombPlantOnly && !afterBombPlantOnly) || (!bombPlanted && beforeBombPlantOnly) || (bombPlanted && afterBombPlantOnly))
+                        if (heatmapTypeName == HeatmapTypeNames.TKills ||
+                            heatmapTypeName == HeatmapTypeNames.CTKills ||
+                            (heatmapTypeName == HeatmapTypeNames.TKillsBeforeBombplant && !bombPlanted) ||
+                            (heatmapTypeName == HeatmapTypeNames.TKillsAfterBombplant && bombPlanted) ||
+                            (heatmapTypeName == HeatmapTypeNames.CTKillsBeforeBombplant && !bombPlanted) ||
+                            (heatmapTypeName == HeatmapTypeNames.CTKillsAfterBombplant && bombPlanted) ||
+                            (heatmapTypeName == HeatmapTypeNames.TKillsBeforeHostageTaken && !hostageRescuedA && !hostageRescuedB) ||
+                            (heatmapTypeName == HeatmapTypeNames.TKillsAfterHostageTaken && (hostageRescuedA || hostageRescuedB)) ||
+                            (heatmapTypeName == HeatmapTypeNames.CTKillsBeforeHostageTaken && !hostageRescuedA && !hostageRescuedB) ||
+                            (heatmapTypeName == HeatmapTypeNames.CTKillsAfterHostageTaken && (hostageRescuedA || hostageRescuedB))
+                        )
                         {
                             var killerTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.KillerSteamID);
                             var victimTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.VictimSteamID);
