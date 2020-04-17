@@ -13,12 +13,16 @@ Outputs heatmap overlay images and JSON information files from CS:GO parsed demo
 
 Heatmap Types
 ```
-	// Generate all heatmaps
+	// Generate All Heatmaps
 	all
 
 	// Kills - Team Sides
 	tkills
+	tkillsbeforebombplant
+	tkillsafterbombplant
 	ctkills
+	ctkillsbeforebombplant
+	ctkillsafterbombplant
 	
 	// Kills - Weapon Types
 	pistolkills
@@ -32,15 +36,15 @@ Heatmap Types
 	knifekills
 	equipmentkills
 	
-	// Kills - random
+	// Kills - Random
 	wallbangkills
 	
-	// Positions - players by team
+	// Positions - Players By Team
 	playerpositionsbyteam
 	campingspotsbyteam
 	firstkillpositionsbyteam
 	
-	// locations - objectives
+	// locations - Objectives
 	bombplantlocations
     hostagerescuelocations
 ```

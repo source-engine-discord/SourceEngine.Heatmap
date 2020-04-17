@@ -2,7 +2,7 @@
 {
 	public class HeatmapTypeNames
 	{
-		// Kills - Weapon Types
+		// Kills - Team Sides
 		public const string TKills = "tkills";
 		public const string TKillsBeforeBombplant = "tkillsbeforebombplant";
 		public const string TKillsAfterBombplant = "tkillsafterbombplant";
@@ -22,15 +22,15 @@
 		public const string KnifeKills = "knifekills";
 		public const string EquipmentKills = "equipmentkills";
 
-		// Kills - random
+		// Kills - Random
 		public const string WallbangKills = "wallbangkills";
 
-		// Positions - players by team
+		// Positions - Players By Team
 		public const string PlayerPositionsByTeam = "playerpositionsbyteam";
 		public const string CampingSpotsByTeam = "campingspotsbyteam";
 		public const string FirstKillPositionsByTeam = "firstkillpositionsbyteam";
 
-		// locations - objectives
+		// locations - Objectives
 		public const string BombPlantLocations = "bombplantlocations";
 		public const string HostageRescueLocations = "hostagerescuelocations";
 
