@@ -4,7 +4,11 @@
 	{
 		// Kills - Weapon Types
 		public const string TKills = "tkills";
+		public const string TKillsBeforeBombplant = "tkillsbeforebombplant";
+		public const string TKillsAfterBombplant = "tkillsafterbombplant";
 		public const string CTKills = "ctkills";
+		public const string CTKillsBeforeBombplant = "ctkillsbeforebombplant";
+		public const string CTKillsAfterBombplant = "ctkillsafterbombplant";
 
 		// Kills - Weapon Types
 		public const string PistolKills = "pistolkills";

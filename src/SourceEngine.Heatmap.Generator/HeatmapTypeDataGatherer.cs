@@ -23,10 +23,22 @@ namespace SourceEngine.Heatmap.Generator
             {
                 // kills - team sides
                 case HeatmapTypeNames.TKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, false, false);
+                    break;
+                case HeatmapTypeNames.TKillsBeforeBombplant:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, true, false);
+                    break;
+                case HeatmapTypeNames.TKillsAfterBombplant:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, false, true);
                     break;
                 case HeatmapTypeNames.CTKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, false, false);
+                    break;
+                case HeatmapTypeNames.CTKillsBeforeBombplant:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, true, false);
+                    break;
+                case HeatmapTypeNames.CTKillsAfterBombplant:
+                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, false, true);
                     break;
 
                 // kills - weapon types
@@ -84,36 +96,46 @@ namespace SourceEngine.Heatmap.Generator
             }
         }
 
-        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side)
+        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side, bool beforeBombPlantOnly, bool afterBombPlantOnly)
         {
             foreach (var allStats in allStatsList)
             {
                 foreach (var kill in allStats.killsStats)
                 {
-                    var killerTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.KillerSteamID);
-                    var victimTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.VictimSteamID);
+                    var round = allStats.roundsStats.Where(x => x.Round == kill.Round).FirstOrDefault();
 
-                    var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allStats, kill.Round);
-
-                    if (killerTeam != victimTeam && killerSide == side)
+                    if (round != null)
                     {
-                        PointsData pointsData = new PointsData()
+                        var bombPlanted = (round.TimeInRoundPlanted != null && round.TimeInRoundPlanted > 0 && round.TimeInRoundPlanted <= kill.TimeInRound) ? true : false;
+                        
+                        if ((!beforeBombPlantOnly && !afterBombPlantOnly) || (!bombPlanted && beforeBombPlantOnly) || (bombPlanted && afterBombPlantOnly))
                         {
-                            DataForPoint1X = kill.XPositionKill,
-                            DataForPoint1Y = kill.YPositionKill,
-                            DataForPoint2X = kill.XPositionDeath,
-                            DataForPoint2Y = kill.YPositionDeath,
-                        };
+                            var killerTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.KillerSteamID);
+                            var victimTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.VictimSteamID);
 
-                        LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
+                            var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allStats, kill.Round);
 
-                        Pen pen = side == Sides.Terrorists
-                                    ? PenColours.PenTerrorist
-                                    : PenColours.PenCounterTerrorist;
+                            if (killerTeam != victimTeam && killerSide == side)
+                            {
+                                PointsData pointsData = new PointsData()
+                                {
+                                    DataForPoint1X = kill.XPositionKill,
+                                    DataForPoint1Y = kill.YPositionKill,
+                                    DataForPoint2X = kill.XPositionDeath,
+                                    DataForPoint2Y = kill.YPositionDeath,
+                                };
 
-                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+                                LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                        pen.Dispose();
+                                Pen pen = side == Sides.Terrorists
+                                            ? PenColours.PenTerrorist
+                                            : PenColours.PenCounterTerrorist;
+
+                                heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+
+                                pen.Dispose();
+                            }
+                        }
                     }
                 }
             }

@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
@@ -384,8 +384,8 @@ namespace SourceEngine.Demo.Heatmaps
             var xPointRight = xPoint1 <= xPoint2 ? Math.Abs(xPoint2) : Math.Abs(xPoint1);
             var yPointBottom = yPoint1 <= yPoint2 ? Math.Abs(yPoint1) : Math.Abs(yPoint2);
 
-            var marginX = (xPointRight - xPointLeft) / 10;
-            var marginY = (yPointTop - yPointBottom) / 10;
+            var marginX = (xPointRight - xPointLeft) / 5;
+            var marginY = (yPointTop - yPointBottom) / 5;
             Rectangle cropObjective = Rectangle.FromLTRB((int)(xPointLeft - marginX), (int)(yPointTop + marginY), (int)(xPointRight + marginX), (int)(yPointBottom - marginY));
 
             Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
