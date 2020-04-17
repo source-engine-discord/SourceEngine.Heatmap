@@ -13,44 +13,51 @@ Outputs heatmap overlay images and JSON information files from CS:GO parsed demo
 
 Heatmap Types
 ```
-	// Generate All Heatmaps
-	all
+    // Generate All Heatmaps
+    All
 
-	// Kills - Team Sides
-	tkills
-	tkillsbeforebombplant
-	tkillsafterbombplant
-    tkillsbeforehostagetaken
-    tkillsafterhostagetaken
-	ctkills
-	ctkillsbeforebombplant
-	ctkillsafterbombplant
-    ctkillsbeforehostagetaken
-    ctkillsafterhostagetaken
-	
-	// Kills - Weapon Types
-	pistolkills
-	smgkills
-	lmgkills
-	shotgunkills
-	assaultriflekills
-	sniperkills
-	grenadekills
-	zeuskills
-	knifekills
-	equipmentkills
-	
-	// Kills - Random
-	wallbangkills
-	
-	// Positions - Players By Team
-	playerpositionsbyteam
-	campingspotsbyteam
-	firstkillpositionsbyteam
-	
-	// locations - Objectives
-	bombplantlocations
-    hostagerescuelocations
+    // Kills - Team Sides
+    TKills
+    TKillsBeforeBombplant
+    TKillsAfterBombplant
+    TKillsBeforeHostageTaken
+    TKillsAfterHostageTaken
+    CTKills
+    CTKillsBeforeBombplant
+    CTKillsAfterBombplant
+    CTKillsBeforeHostageTaken
+    CTKillsAfterHostageTaken
+
+    // Kills - Weapon Types
+    PistolKills
+    SmgKills
+    LmgKills
+    ShotgunKills
+    AssaultrifleKills
+    SniperKills
+    GrenadeKills
+    ZeusKills
+    KnifeKills
+    EquipmentKills
+
+    // Kills - Random
+    WallbangKills
+
+    // Positions - Players By Team
+    PlayerPositionsByTeam
+    CampingSpotsByTeam
+    FirstKillPositionsByTeam
+
+    // Locations - Objectives
+    BombplantLocations
+    HostageRescueLocations
+
+    // Locations - Grenades
+    smokegrenadelocations
+    flashgrenadelocations
+    hegrenadelocations
+    incendiarygrenadelocations
+    decoygrenadelocations
 ```
 
 Example:

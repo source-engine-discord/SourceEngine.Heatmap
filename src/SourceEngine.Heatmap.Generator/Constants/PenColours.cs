@@ -28,5 +28,12 @@ namespace SourceEngine.Heatmap.Generator.Constants
 		// Bombsites
 		public static Pen PenBombplant => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
 		public static Pen PenHostageRescue => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
+
+		// Grenades
+		public static Pen PenGrenadeSmoke => new Pen(Color.FromArgb(35, 230, 255, 255));
+		public static Pen PenGrenadeFlash => new Pen(Color.FromArgb(35, 102, 180, 255));
+		public static Pen PenGrenadeHE => new Pen(Color.FromArgb(35, 128, 102, 255));
+		public static Pen PenGrenadeIncendiary => new Pen(Color.FromArgb(35, 204, 0, 0));
+		public static Pen PenGrenadeDecoy => new Pen(Color.FromArgb(35, 102, 230, 153));
 	}
 }

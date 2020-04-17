@@ -38,6 +38,13 @@
 		public const string BombPlantLocations = "bombplantlocations";
 		public const string HostageRescueLocations = "hostagerescuelocations";
 
+		// locations - Grenades
+		public const string SmokeGrenadeLocations = "smokegrenadelocations";
+		public const string FlashGrenadeLocations = "flashgrenadelocations";
+		public const string HEGrenadeLocations = "hegrenadelocations";
+		public const string IncendiaryGrenadeLocations = "incendiarygrenadelocations";
+		public const string DecoyGrenadeLocations = "decoygrenadelocations";
+
 		public HeatmapTypeNames() { }
 	}
 }

@@ -108,6 +108,23 @@ namespace SourceEngine.Heatmap.Generator
                 case HeatmapTypeNames.HostageRescueLocations:
                     GenerateHeatmapDataHostageRescueLocations(overviewInfo, allStatsList, graphics);
                     break;
+
+                // locations - grenades
+                case HeatmapTypeNames.SmokeGrenadeLocations:
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "smoke");
+                    break;
+                case HeatmapTypeNames.FlashGrenadeLocations:
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "flash");
+                    break;
+                case HeatmapTypeNames.HEGrenadeLocations:
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "he");
+                    break;
+                case HeatmapTypeNames.IncendiaryGrenadeLocations:
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "incendiary");
+                    break;
+                case HeatmapTypeNames.DecoyGrenadeLocations:
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "decoy");
+                    break;
             }
         }
 
@@ -490,6 +507,52 @@ namespace SourceEngine.Heatmap.Generator
                         Pen pen = PenColours.PenHostageRescue;
 
                         heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+
+                        brush.Dispose();
+                        pen.Dispose();
+                    }
+                }
+            }
+        }
+
+        public void GenerateHeatmapDataGrenadeLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string grenadeType)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                foreach (var grenade in allStats.grenadesSpecificStats)
+                {
+                    if (grenade.NadeType.ToLower() == grenadeType)
+                    {
+                        Vector location = new Vector() { X = (float)grenade.XPosition, Y = (float)grenade.YPosition, Z = (float)grenade.ZPosition };
+
+                        PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, location);
+
+                        SolidBrush brush = grenadeType switch
+                        {
+                            "smoke" => BrushColours.BrushGrenadeSmoke,
+                            "flash" => BrushColours.BrushGrenadeFlash,
+                            "he" => BrushColours.BrushGrenadeHE,
+                            "incendiary" => BrushColours.BrushGrenadeIncendiary,
+                            "decoy" => BrushColours.BrushGrenadeDecoy,
+                        };
+                        Pen pen = grenadeType switch
+                        {
+                            "smoke" => PenColours.PenGrenadeSmoke,
+                            "flash" => PenColours.PenGrenadeFlash,
+                            "he" => PenColours.PenGrenadeHE,
+                            "incendiary" => PenColours.PenGrenadeIncendiary,
+                            "decoy" => PenColours.PenGrenadeDecoy,
+                        };
+                        int diameter = grenadeType switch
+                        {
+                            "smoke" => 20,
+                            "flash" => 6,
+                            "he" => 12,
+                            "incendiary" => 20,
+                            "decoy" => 6,
+                        };
+
+                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
 
                         brush.Dispose();
                         pen.Dispose();
