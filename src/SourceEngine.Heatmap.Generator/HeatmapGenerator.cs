@@ -159,7 +159,7 @@ namespace SourceEngine.Demo.Heatmaps
 
             var allStatsMatchIdsDone = new List<string>();
             ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromDirectory);
-            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromTxtFile); // do this second to ensure that it overwrites any duplicates with the newer information (from filepathsFromDirectory)
+            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromTxtFile); // prioritise json from filepathsFromDirectory
 
             var firstAllStats = allStatsList.First();
             var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
@@ -174,7 +174,7 @@ namespace SourceEngine.Demo.Heatmaps
             //add newly parsed demo data into heatmap data json file
             foreach (var allStats in allStatsList)
             {
-                heatmapData.AllStatsList.RemoveAll(x => x.mapInfo.DemoName == allStats.mapInfo.DemoName); // if the parsed demo stats are not already in the heatmapData list, add them
+                heatmapData.AllStatsList.RemoveAll(x => x.mapInfo.DemoName == allStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
                 heatmapData.AllStatsList.Add(allStats);
                 OverwriteJsonFile(heatmapData, heatmapDataFilename);
             }
