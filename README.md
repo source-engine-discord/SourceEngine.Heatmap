@@ -40,8 +40,9 @@ Heatmap Types
 	campingspotsbyteam
 	firstkillpositionsbyteam
 	
-	// positions - bombsites
+	// locations - objectives
 	bombplantlocations
+    hostagerescuelocations
 ```
 
 Example:

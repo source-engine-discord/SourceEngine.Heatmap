@@ -215,13 +215,29 @@ namespace SourceEngine.Demo.Heatmaps
         {
             string[] lines = File.ReadAllLines(filepath);
 
-            // remove map name line
-            lines[0] = string.Empty;
-
-            // remove tabs
+            // remove inline comments
             for (int i = 0; i < lines.Count(); i++)
             {
-                lines[i] = Regex.Replace(lines[i], @"\t", "");
+                for (int j = 0; j < lines[i].Count(); j++)
+                {
+                    if (lines[i][j] == '/' && j + 1 < lines[i].Count() && lines[i][j+1] == '/')
+                    {
+                        lines[i] = lines[i].Substring(0, j);
+                    }
+                }
+            }
+
+            // remove blank entries
+            lines = lines.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+            // remove map name line
+            lines[0] = string.Empty;
+            lines = lines.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+            // remove tabs and .ToLower() everything
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                lines[i] = Regex.Replace(lines[i], @"\t", "").ToLower();
             }
 
             // remove blank entries

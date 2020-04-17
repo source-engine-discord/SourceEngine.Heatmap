@@ -89,9 +89,12 @@ namespace SourceEngine.Heatmap.Generator
                     GenerateHeatmapDataFirstKillPositions(overviewInfo, allStatsList, graphics);
                     break;
 
-                // positions - bombsites
+                // locations - objectives
                 case HeatmapTypeNames.BombPlantLocations:
-                    GenerateHeatmapDataBombPlantPositions(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataBombPlantLocations(overviewInfo, allStatsList, graphics);
+                    break;
+                case HeatmapTypeNames.HostageRescueLocations:
+                    GenerateHeatmapDataHostageRescueLocations(overviewInfo, allStatsList, graphics);
                     break;
             }
         }
@@ -414,7 +417,7 @@ namespace SourceEngine.Heatmap.Generator
             }
         }
 
-        public void GenerateHeatmapDataBombPlantPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataBombPlantLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
             foreach (var allStats in allStatsList)
             {
@@ -426,8 +429,41 @@ namespace SourceEngine.Heatmap.Generator
 
                         PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, bombPlantLocation);
 
-                        SolidBrush brush = BrushColours.BrushBombplants;
-                        Pen pen = PenColours.PenBombplants;
+                        SolidBrush brush = BrushColours.BrushBombplant;
+                        Pen pen = PenColours.PenBombplant;
+
+                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+
+                        brush.Dispose();
+                        pen.Dispose();
+                    }
+                }
+            }
+        }
+
+        public void GenerateHeatmapDataHostageRescueLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        {
+            foreach (var allStats in allStatsList)
+            {
+                foreach (var round in allStats.roundsStats)
+                {
+                    List<Vector> hostageRescuedLocations = new List<Vector>();
+
+                    if (round.RescuedHostageA == true && round.RescuedHostageAPositionX != null && round.RescuedHostageAPositionY != null && round.RescuedHostageAPositionZ != null)
+                    {
+                        hostageRescuedLocations.Add(new Vector() { X = (int)round.RescuedHostageAPositionX, Y = (int)round.RescuedHostageAPositionY, Z = (int)round.RescuedHostageAPositionZ });
+                    }
+                    if (round.RescuedHostageB == true && round.RescuedHostageBPositionX != null && round.RescuedHostageBPositionY != null && round.RescuedHostageBPositionZ != null)
+                    {
+                        hostageRescuedLocations.Add(new Vector() { X = (int)round.RescuedHostageBPositionX, Y = (int)round.RescuedHostageBPositionY, Z = (int)round.RescuedHostageBPositionZ });
+                    }
+
+                    foreach (var location in hostageRescuedLocations)
+                    {
+                        PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, location);
+
+                        SolidBrush brush = BrushColours.BrushHostageRescue;
+                        Pen pen = PenColours.PenHostageRescue;
 
                         heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
 

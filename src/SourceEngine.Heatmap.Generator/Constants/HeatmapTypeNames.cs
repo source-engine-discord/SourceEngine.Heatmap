@@ -30,8 +30,9 @@
 		public const string CampingSpotsByTeam = "campingspotsbyteam";
 		public const string FirstKillPositionsByTeam = "firstkillpositionsbyteam";
 
-		// positions - bombsites
+		// locations - objectives
 		public const string BombPlantLocations = "bombplantlocations";
+		public const string HostageRescueLocations = "hostagerescuelocations";
 
 		public HeatmapTypeNames() { }
 	}

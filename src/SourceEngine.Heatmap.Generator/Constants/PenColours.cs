@@ -26,6 +26,7 @@ namespace SourceEngine.Heatmap.Generator.Constants
 		public static Pen PenWallbangCountThreePlus => new Pen(Color.FromArgb(50, 255, 0, 0), 1);
 
 		// Bombsites
-		public static Pen PenBombplants => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
+		public static Pen PenBombplant => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
+		public static Pen PenHostageRescue => new Pen(Color.FromArgb(35, 153, 0, 0), 1);
 	}
 }

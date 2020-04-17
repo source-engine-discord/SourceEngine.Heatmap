@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace SourceEngine.Heatmap.Generator.Models
 {
@@ -29,16 +28,17 @@ namespace SourceEngine.Heatmap.Generator.Models
 		[DataMember(Name = "verticalsections")]
 		public OverviewInfoVerticalSections VerticalSections { get; set; }
 
-		[DataMember(Name = "CTSpawn_x")]
+
+		[DataMember(Name = "ctspawn_x")]
 		public float? CTSpawnX { get; set; }
 
-		[DataMember(Name = "CTSpawn_y")]
+		[DataMember(Name = "ctspawn_y")]
 		public float? CTSpawnY { get; set; }
 
-		[DataMember(Name = "TSpawn_x")]
+		[DataMember(Name = "tspawn_x")]
 		public float? TSpawnX { get; set; }
 
-		[DataMember(Name = "TSpawn_y")]
+		[DataMember(Name = "tspawn_y")]
 		public float? TSpawnY { get; set; }
 
 
@@ -53,6 +53,19 @@ namespace SourceEngine.Heatmap.Generator.Models
 
 		[DataMember(Name = "bombB_y")]
 		public float? BBombsiteY { get; set; }
+
+
+		[DataMember(Name = "hostage1_x")]
+		public float? AHostageX { get; set; }
+
+		[DataMember(Name = "hostage1_y")]
+		public float? AHostageY { get; set; }
+
+		[DataMember(Name = "hostage2_x")]
+		public float? BHostageX { get; set; }
+
+		[DataMember(Name = "hostage2_y")]
+		public float? BHostageY { get; set; }
 
 
 		public OverviewInfo() { }

@@ -9,6 +9,7 @@ namespace SourceEngine.Heatmap.Generator.Constants
 		public static SolidBrush BrushCounterTerrorist => new SolidBrush(Color.FromArgb(25, 51, 153, 255));
 
 		// Bombsites
-		public static SolidBrush BrushBombplants => new SolidBrush(Color.FromArgb(35, 153, 0, 0));
+		public static SolidBrush BrushBombplant => new SolidBrush(Color.FromArgb(35, 153, 0, 0));
+		public static SolidBrush BrushHostageRescue => new SolidBrush(Color.FromArgb(35, 153, 0, 0));
 	}
 }
