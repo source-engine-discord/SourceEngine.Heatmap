@@ -154,16 +154,12 @@ namespace SourceEngine.Demo.Heatmaps
         {
             var filepathsFromDirectory = Directory.GetFiles(inputDataDirectory).ToList();
             var filepathsFromTxtFile = GetFilepathsFromInputDataFile();
-            var allFilepathsForParsedDemos = filepathsFromDirectory.Concat(filepathsFromTxtFile);
 
             var allStatsList = new List<AllStats>();
 
-            foreach (var filepath in allFilepathsForParsedDemos)
-            {
-                allStatsList.Add(ReadJsonFile<AllStats>(typeof(AllStats), filepath));
-
-                Console.WriteLine("Finished reading allStats for: " + filepath);
-            }
+            var allStatsMatchIdsDone = new List<string>();
+            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromDirectory);
+            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromTxtFile); // do this second to ensure that it overwrites any duplicates with the newer information (from filepathsFromDirectory)
 
             var firstAllStats = allStatsList.First();
             var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
@@ -191,11 +187,10 @@ namespace SourceEngine.Demo.Heatmaps
 
                     var instance = new HeatmapTypeNames();
                     heatmapsToGenerate = typeof(HeatmapTypeNames)
-                                             .GetFields()
-                                             .Select(field => field.GetValue(instance))
-                                             .Cast<string>()
-                                             .ToList();
-
+                                            .GetFields()
+                                            .Select(field => field.GetValue(instance))
+                                            .Cast<string>()
+                                            .ToList();
                 }
 
                 CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
@@ -203,6 +198,26 @@ namespace SourceEngine.Demo.Heatmaps
             else
             {
                 Console.WriteLine("No AllStats instances (parsed demo data) found.");
+            }
+        }
+
+        private static void ParseJson(List<AllStats> allStatsList, List<string> allStatsMatchIdsDone, List<string> filepaths)
+        {
+            foreach (var filepath in filepaths)
+            {
+                var json = ReadJsonFile<AllStats>(typeof(AllStats), filepath);
+
+                if (!allStatsMatchIdsDone.Contains(json.mapInfo.DemoName))
+                {
+                    allStatsMatchIdsDone.Add(json.mapInfo.DemoName);
+                    allStatsList.Add(json);
+
+                    Console.WriteLine("Finished reading allStats for: " + filepath);
+                }
+                else
+                {
+                    Console.WriteLine("AllStats already found, skipping: " + filepath);
+                }
             }
         }
 
