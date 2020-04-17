@@ -316,7 +316,7 @@ namespace SourceEngine.Heatmap.Generator
 
                             LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                            Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "terrorist"
+                            Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "t"
                                         ? PenColours.PenTerrorist
                                         : PenColours.PenCounterTerrorist;
 
@@ -363,10 +363,10 @@ namespace SourceEngine.Heatmap.Generator
                                 {
                                     PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, campingPosition);
 
-                                    SolidBrush brush = playerPos.TeamSide.ToLower() == "terrorist"
+                                    SolidBrush brush = playerPos.TeamSide.ToLower() == "t"
                                                 ? BrushColours.BrushTerrorist
                                                 : BrushColours.BrushCounterTerrorist;
-                                    Pen pen = playerPos.TeamSide.ToLower() == "terrorist"
+                                    Pen pen = playerPos.TeamSide.ToLower() == "t"
                                                 ? PenColours.PenTerrorist
                                                 : PenColours.PenCounterTerrorist;
 
