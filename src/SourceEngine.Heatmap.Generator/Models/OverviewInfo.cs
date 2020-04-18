@@ -66,6 +66,17 @@ namespace SourceEngine.Heatmap.Generator.Models
 
 		[DataMember(Name = "hostage2_y")]
 		public float? BHostageY { get; set; }
+		[DataMember(Name = "hostage3_x")]
+		public float? CHostageX { get; set; }
+
+		[DataMember(Name = "hostage3_y")]
+		public float? CHostageY { get; set; }
+
+		[DataMember(Name = "hostage4_x")]
+		public float? DHostageX { get; set; }
+
+		[DataMember(Name = "hostage4_y")]
+		public float? DHostageY { get; set; }
 
 
 		public OverviewInfo() { }

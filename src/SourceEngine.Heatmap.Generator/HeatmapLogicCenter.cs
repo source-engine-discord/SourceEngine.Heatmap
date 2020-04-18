@@ -68,6 +68,132 @@ namespace SourceEngine.Heatmap.Generator
             };
         }
 
+
+        /*
+        
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported.
+        /// Returns a single point.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointData"></param>
+        /// <returns></returns>
+        public PointF CreateSinglePoint(OverviewInfo overviewInfo, Vector pointData)
+        {
+            var xPoint = Math.Abs(Convert.ToInt32(Math.Abs(Math.Abs((Convert.ToSingle(pointData.X)) - overviewInfo.OffsetX)) / overviewInfo.Scale));
+            var yPoint = Math.Abs(Convert.ToInt32(Math.Abs(Math.Abs((Convert.ToSingle(pointData.Y)) - overviewInfo.OffsetY)) / overviewInfo.Scale));
+
+            return new PointF()
+            {
+                X = xPoint,
+                Y = yPoint,
+            };
+        }
+        
+        */
+
+
+
+
+
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported for objective heatmaps.
+        /// Returns a rectangle used for cropping images.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointData"></param>
+        /// <param name="marginMultiplier"></param>
+        /// <returns></returns>
+        public RectangleBorders CreateRectangleBorders(OverviewInfo overviewInfo, PointsData pointsData, Bitmap overviewImage, float marginMultiplier = 5, bool squarePadding = false)
+        {
+            var point1 = CreateSinglePoint(overviewInfo, new Vector() { X = Convert.ToSingle(pointsData.DataForPoint1X), Y = Convert.ToSingle(pointsData.DataForPoint1Y) });
+            var point2 = CreateSinglePoint(overviewInfo, new Vector() { X = Convert.ToSingle(pointsData.DataForPoint2X), Y = Convert.ToSingle(pointsData.DataForPoint2Y) });
+
+            var xPointLeft = point1.X <= point2.X ? Math.Abs(point1.X) : Math.Abs(point2.X);
+            var yPointTop = point1.Y <= point2.Y ? Math.Abs(point1.Y) : Math.Abs(point2.Y);
+            var xPointRight = point1.X <= point2.X ? Math.Abs(point2.X) : Math.Abs(point1.X);
+            var yPointBottom = point1.Y <= point2.Y ? Math.Abs(point2.Y) : Math.Abs(point1.Y);
+
+            var marginX = (xPointRight - xPointLeft) / marginMultiplier;
+            var marginY = (yPointBottom - yPointTop) / marginMultiplier;
+
+            var xPointLeftMargined = (int)Math.Floor(xPointLeft - marginX);
+            var yPointTopMargined = (int)Math.Ceiling(yPointTop - marginY);
+            var xPointRightMargined = (int)Math.Ceiling(xPointRight + marginX);
+            var yPointBottomMargined = (int)Math.Floor(yPointBottom + marginY);
+
+            // add padding to make the output image square
+            if (squarePadding)
+            {
+                var width = xPointRightMargined - xPointLeftMargined;
+                var height = yPointBottomMargined - yPointTopMargined;
+                var difference = Math.Abs(width - height);
+
+                if (difference > 0)
+                {
+                    var differenceHalved = (double)difference / 2;
+
+                    var padding1 = (int)Math.Ceiling(differenceHalved);
+                    var padding2 = (int)Math.Floor(differenceHalved);
+
+                    if (width > height)
+                    {
+                        yPointTopMargined -= padding1;
+                        yPointBottomMargined += padding2;
+                    }
+                    else
+                    {
+                        xPointLeftMargined -= padding1;
+                        xPointRightMargined += padding2;
+                    }
+                }
+            }
+
+            // ensure all points are within the image's border
+            xPointLeftMargined = (xPointLeftMargined < 0) ? 0 : xPointLeftMargined;
+            yPointTopMargined = (yPointTopMargined < 0) ? 0 : yPointTopMargined;
+            xPointRightMargined = (xPointRightMargined > overviewImage.Height) ? overviewImage.Height : xPointRightMargined;
+            yPointBottomMargined = (yPointBottomMargined > overviewImage.Width) ? overviewImage.Width : yPointBottomMargined;
+
+            return new RectangleBorders()
+            {
+                PointLeft = xPointLeftMargined,
+                PointTop = yPointTopMargined,
+                PointRight = xPointRightMargined,
+                PointBottom = yPointBottomMargined,
+            };
+        }
+
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported for objective heatmaps.
+        /// Returns a rectangle used for cropping images.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointData"></param>
+        /// <param name="marginMultiplier"></param>
+        /// <returns></returns>
+        public Rectangle CreateRectangleObjective(OverviewInfo overviewInfo, PointsData pointsData, Bitmap overviewImage, float marginMultiplier)
+        {
+            RectangleBorders rectangleBorders = CreateRectangleBorders(overviewInfo, pointsData, overviewImage, marginMultiplier, false);
+
+            return Rectangle.FromLTRB((int)rectangleBorders.PointLeft, (int)rectangleBorders.PointTop, (int)rectangleBorders.PointRight, (int)rectangleBorders.PointBottom);
+        }
+
+        /// <summary>
+        /// Scales the position values to line up with the overview correctly when exported for objective heatmaps.
+        /// Returns a rectangle used for cropping images, with additional padding to the margins to become squared.
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="pointData"></param>
+        /// <param name="marginMultiplier"></param>
+        /// <returns></returns>
+        public Rectangle CreateRectangleObjectiveSquarePadding(OverviewInfo overviewInfo, PointsData pointsData, Bitmap overviewImage, float marginMultiplier)
+        {
+            RectangleBorders rectangleBorders = CreateRectangleBorders(overviewInfo, pointsData, overviewImage, marginMultiplier, true);
+
+            return Rectangle.FromLTRB((int)rectangleBorders.PointLeft, (int)rectangleBorders.PointTop, (int)rectangleBorders.PointRight, (int)rectangleBorders.PointBottom);
+        }
+
         public void DrawLine(Graphics graphics, Pen pen, LinePoints linePoints)
         {
             graphics.DrawLine(pen, linePoints.Point1, linePoints.Point2);

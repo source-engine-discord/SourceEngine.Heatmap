@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
@@ -23,6 +23,7 @@ namespace SourceEngine.Demo.Heatmaps
     {
         private ImageProcessorExtender imageProcessorExtender = new ImageProcessorExtender();
         private static HeatmapTypeDataGatherer heatmapTypeDataGatherer = new HeatmapTypeDataGatherer();
+        private static HeatmapLogicCenter heatmapLogicCenter = new HeatmapLogicCenter();
 
         private static string inputDataDirectory;
         private static string inputDataFilepathsFile;
@@ -171,7 +172,7 @@ namespace SourceEngine.Demo.Heatmaps
                 heatmapData = new MapHeatmapData() { AllStatsList = new List<AllStats>() };
             }
 
-            //add newly parsed demo data into heatmap data json file
+            // add newly parsed demo data into heatmap data json file
             foreach (var allStats in allStatsList)
             {
                 heatmapData.AllStatsList.RemoveAll(x => x.mapInfo.DemoName == allStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
@@ -191,6 +192,15 @@ namespace SourceEngine.Demo.Heatmaps
                                             .Select(field => field.GetValue(instance))
                                             .Cast<string>()
                                             .ToList();
+                }
+
+                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "defuse" || allStatsList.FirstOrDefault().rescueZoneStats.All(x => x.XPositionMin == null))
+                {
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
+                }
+                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "hostage" || allStatsList.FirstOrDefault().bombsiteStats.All(x => x.XPositionMin == null))
+                {
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
                 }
 
                 CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
@@ -373,6 +383,26 @@ namespace SourceEngine.Demo.Heatmaps
                         /*outputFilepath += ".png";
                         SaveImagePng(bmp, outputFilepath);*/
                     }
+                    else if (heatmapType == HeatmapTypeNames.HostageRescueLocations)
+                    {
+                        var rescueZoneOutputFilepath = outputFilepath + "_rescue_zone.png";
+                        var rescueZoneOutputOverviewFilepath = outputFilepath + "_rescue_zone_overview.png";
+
+                        var rescueZone = allStatsList.FirstOrDefault().rescueZoneStats.FirstOrDefault();
+
+                        PointsData pointsDataRescueZone = new PointsData()
+                        {
+                            DataForPoint1X = rescueZone.XPositionMin,
+                            DataForPoint1Y = rescueZone.YPositionMin,
+                            DataForPoint2X = rescueZone.XPositionMax,
+                            DataForPoint2Y = rescueZone.YPositionMax,
+                        };
+
+                        SaveImagePngObjective(overviewInfo, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
+
+                        /*outputFilepath += ".png";
+                        SaveImagePng(bmp, outputFilepath);*/
+                    }
                     else
                     {
                         outputFilepath += ".png";
@@ -405,19 +435,8 @@ namespace SourceEngine.Demo.Heatmaps
             Bitmap overviewImage = new Bitmap(@"C:\Users\jimmy\Desktop\heatmapstuff\de_mutiny_radar.png"); ///////////////////////////////////////////////
             //overviewImage.SetResolution(96, 96);
 
-            var xPoint1 = (Convert.ToSingle(pointsData.DataForPoint1X) - overviewInfo.OffsetX) / overviewInfo.Scale;
-            var yPoint1 = (Convert.ToSingle(pointsData.DataForPoint1Y) - overviewInfo.OffsetY) / overviewInfo.Scale;
-            var xPoint2 = (Convert.ToSingle(pointsData.DataForPoint2X) - overviewInfo.OffsetX) / overviewInfo.Scale;
-            var yPoint2 = (Convert.ToSingle(pointsData.DataForPoint2Y) - overviewInfo.OffsetY) / overviewInfo.Scale;
-
-            var xPointLeft = xPoint1 <= xPoint2 ? Math.Abs(xPoint1) : Math.Abs(xPoint2);
-            var yPointTop = yPoint1 <= yPoint2 ? Math.Abs(yPoint2) : Math.Abs(yPoint1);
-            var xPointRight = xPoint1 <= xPoint2 ? Math.Abs(xPoint2) : Math.Abs(xPoint1);
-            var yPointBottom = yPoint1 <= yPoint2 ? Math.Abs(yPoint1) : Math.Abs(yPoint2);
-
-            var marginX = (xPointRight - xPointLeft) / 5;
-            var marginY = (yPointTop - yPointBottom) / 5;
-            Rectangle cropObjective = Rectangle.FromLTRB((int)(xPointLeft - marginX), (int)(yPointTop + marginY), (int)(xPointRight + marginX), (int)(yPointBottom - marginY));
+            var marginMultiplier = 10;
+            Rectangle cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
 
             Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
             Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
