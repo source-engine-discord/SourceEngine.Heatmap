@@ -147,13 +147,37 @@ namespace SourceEngine.Heatmap.Generator
                         xPointRightMargined += padding2;
                     }
                 }
+
+                // check if all points are within the image's border, if not add the removed amount onto the other side
+                if (xPointLeftMargined < 0)
+                {
+                    xPointRightMargined += -xPointLeftMargined;
+                    xPointLeftMargined = 0;
+                }
+
+                else if (yPointTopMargined < 0)
+                {
+                    yPointBottomMargined += -yPointTopMargined;
+                    yPointTopMargined = 0;
+                }
+                else if (xPointRightMargined > overviewImage.Width)
+                {
+                    xPointLeftMargined += -xPointRightMargined;
+                    xPointRightMargined = overviewImage.Width;
+                }
+
+                else if (yPointBottomMargined > overviewImage.Height)
+                {
+                    yPointTopMargined += -yPointBottomMargined;
+                    yPointBottomMargined = overviewImage.Height;
+                }
             }
 
-            // ensure all points are within the image's border
+            // final check to ensure all points are within the image's border
             xPointLeftMargined = (xPointLeftMargined < 0) ? 0 : xPointLeftMargined;
             yPointTopMargined = (yPointTopMargined < 0) ? 0 : yPointTopMargined;
-            xPointRightMargined = (xPointRightMargined > overviewImage.Height) ? overviewImage.Height : xPointRightMargined;
-            yPointBottomMargined = (yPointBottomMargined > overviewImage.Width) ? overviewImage.Width : yPointBottomMargined;
+            xPointRightMargined = (xPointRightMargined > overviewImage.Width) ? overviewImage.Width : xPointRightMargined;
+            yPointBottomMargined = (yPointBottomMargined > overviewImage.Height) ? overviewImage.Height : yPointBottomMargined;
 
             return new RectangleBorders()
             {
