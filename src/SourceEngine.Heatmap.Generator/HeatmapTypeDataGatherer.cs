@@ -360,17 +360,21 @@ namespace SourceEngine.Heatmap.Generator
 
                             LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                            Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "t"
-                                        ? PenColours.PenTerrorist
-                                        : PenColours.PenCounterTerrorist;
+                            var maxLineLengthValid = 75;
+                            if (Math.Abs(linePoints.Point1.X - linePoints.Point2.X) <= maxLineLengthValid && Math.Abs(linePoints.Point1.Y - linePoints.Point2.Y) <= maxLineLengthValid) // do not render anomalies
+                            {
+                                Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "t"
+                                            ? PenColours.PenTerrorist
+                                            : PenColours.PenCounterTerrorist;
 
-                            /*Pen pen = side == Sides.Terrorists
-                                        ? PenColours.PenTerrorist
-                                        : PenColours.PenCounterTerrorist;*/
+                                /*Pen pen = side == Sides.Terrorists
+                                            ? PenColours.PenTerrorist
+                                            : PenColours.PenCounterTerrorist;*/
 
-                            heatmapLogicCenter.DrawCurve(graphics, pen, linePoints);
+                                heatmapLogicCenter.DrawCurve(graphics, pen, linePoints);
 
-                            pen.Dispose();
+                                pen.Dispose();
+                            }
                         }
                     }
                 }
