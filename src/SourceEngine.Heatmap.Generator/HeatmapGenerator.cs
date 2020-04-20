@@ -194,12 +194,21 @@ namespace SourceEngine.Demo.Heatmaps
                                             .ToList();
                 }
 
+                // remove unnecessary defuse specific or hostage specific heatmaps for the map
                 if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "defuse" || allStatsList.FirstOrDefault().rescueZoneStats.All(x => x.XPositionMin == null))
                 {
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeHostageTaken.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
                 }
-                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "hostage" || allStatsList.FirstOrDefault().bombsiteStats.All(x => x.XPositionMin == null))
+                else if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "hostage" || allStatsList.FirstOrDefault().bombsiteStats.All(x => x.XPositionMin == null))
                 {
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplant.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplant.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
                 }
 
