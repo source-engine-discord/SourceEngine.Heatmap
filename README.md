@@ -54,11 +54,11 @@ Heatmap Types
     HostageRescueLocations
 
     // Locations - Grenades
-    smokegrenadelocations
-    flashgrenadelocations
-    hegrenadelocations
-    incendiarygrenadelocations
-    decoygrenadelocations
+    SmokeGrenadeLocations
+    FlashGrenadeLocations
+    HeGrenadeLocations
+    IncendiaryGrenadeLocations
+    DecoyGrenadeLocations
 ```
 
 Example:
