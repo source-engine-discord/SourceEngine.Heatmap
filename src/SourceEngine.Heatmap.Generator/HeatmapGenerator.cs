@@ -25,6 +25,9 @@ namespace SourceEngine.Demo.Heatmaps
         private static HeatmapTypeDataGatherer heatmapTypeDataGatherer = new HeatmapTypeDataGatherer();
         private static HeatmapLogicCenter heatmapLogicCenter = new HeatmapLogicCenter();
 
+        private static HeatmapTypeNames heatmapTypeNames = new HeatmapTypeNames();
+        private static List<string> validHeatmapTypeNames = new List<string>();
+
         private static string inputDataDirectory;
         private static string inputDataFilepathsFile;
         private static string overviewFilesDirectory;
@@ -33,7 +36,7 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void helpText()
         {
-            Debug.WriteLine("                             ========= HELP ==========\n\n" +
+            Console.WriteLine("                             ========= HELP ==========\n\n" +
                         "Command line parameters:\n\n" +
                         "-inputdatadirectory            [path]                              The folder location of the input data json files (parsed demo data)\n" +
                         "-inputdatafilepathsfile        [path]                              The file location of the text file containing a list of filepaths that contain input json data (parsed demo data)\n" +
@@ -47,13 +50,20 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void helpTextOverviewRequired()
         {
-            Debug.WriteLine("-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.");
+            Console.WriteLine("-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.");
+        }
+
+        private static void helpTextInvalidHeatmapNameProvided(string invalidHeatmapName)
+        {
+            Console.WriteLine(string.Concat("Invalid heatmap name provided: ", invalidHeatmapName));
         }
 
         private static void Main(string[] args)
         {
+            Console.WriteLine("Running Heatmap Generator");
+
             List<string> heatmapsToGenerate = new List<string>();
-            
+
             if (args.Count() == 0)
             {
                 helpText();
@@ -138,6 +148,14 @@ namespace SourceEngine.Demo.Heatmaps
                 }
             }
 
+            // stores all possible valid heatmap names
+            validHeatmapTypeNames = typeof(HeatmapTypeNames)
+                                        .GetFields()
+                                        .Select(field => field.GetValue(heatmapTypeNames))
+                                        .Cast<string>()
+                                        .ToList();
+
+            // validity checks for possible issues
             if ((string.IsNullOrWhiteSpace(inputDataDirectory) && string.IsNullOrWhiteSpace(inputDataFilepathsFile)) ||
                 string.IsNullOrWhiteSpace(heatmapJsonDirectory) || string.IsNullOrWhiteSpace(outputHeatmapDirectory) ||
                 heatmapsToGenerate.Count() == 0
@@ -147,12 +165,18 @@ namespace SourceEngine.Demo.Heatmaps
                 return;
             }
             else if (string.IsNullOrWhiteSpace(overviewFilesDirectory) &&
-                heatmapsToGenerate.Any(x => x.ToLower() == "all" ||
-                                            x.ToLower() == HeatmapTypeNames.BombPlantLocations.ToString().ToLower() ||
-                                            x.ToLower() == HeatmapTypeNames.HostageRescueLocations.ToString().ToLower())
+                heatmapsToGenerate.Any(x => x == "all" ||
+                                            x == HeatmapTypeNames.BombPlantLocations.ToString().ToLower() ||
+                                            x == HeatmapTypeNames.HostageRescueLocations.ToString().ToLower())
             )
             {
                 helpTextOverviewRequired();
+                helpText();
+                return;
+            }
+            else if (heatmapsToGenerate.Any(x => x != "all" && !validHeatmapTypeNames.Contains(x)))
+            {
+                helpTextInvalidHeatmapNameProvided(heatmapsToGenerate.Where(x => !validHeatmapTypeNames.Contains(x)).First());
                 helpText();
                 return;
             }
@@ -180,8 +204,17 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
         {
-            var filepathsFromDirectory = Directory.GetFiles(inputDataDirectory).ToList();
-            var filepathsFromTxtFile = GetFilepathsFromInputDataFile();
+            var filepathsFromDirectory = new List<string>();
+            var filepathsFromTxtFile = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(inputDataDirectory))
+            {
+                filepathsFromDirectory = Directory.GetFiles(inputDataDirectory).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(inputDataFilepathsFile))
+            {
+                filepathsFromTxtFile = GetFilepathsFromInputDataFile();
+            }
 
             var allStatsList = new List<AllStats>();
 
@@ -211,14 +244,7 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
                 {
-                    heatmapsToGenerate = new List<string>();
-
-                    var instance = new HeatmapTypeNames();
-                    heatmapsToGenerate = typeof(HeatmapTypeNames)
-                                            .GetFields()
-                                            .Select(field => field.GetValue(instance))
-                                            .Cast<string>()
-                                            .ToList();
+                    heatmapsToGenerate = validHeatmapTypeNames;
                 }
 
                 // remove unnecessary defuse specific or hostage specific heatmaps for the map
@@ -237,6 +263,13 @@ namespace SourceEngine.Demo.Heatmaps
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplant.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
+                }
+
+                // always put playerpositionsbyteam heatmap last as it takes much longer than the others
+                if (heatmapsToGenerate.Any(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString()))
+                {
+                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString());
+                    heatmapsToGenerate.Add(HeatmapTypeNames.PlayerPositionsByTeam.ToString());
                 }
 
                 CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
@@ -269,6 +302,11 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static List<string> GetFilepathsFromInputDataFile()
         {
+            if (string.IsNullOrWhiteSpace(inputDataFilepathsFile))
+            {
+                return new List<string>();
+            }
+
             return File.ReadAllLines(inputDataFilepathsFile).ToList();
         }
 
@@ -380,6 +418,8 @@ namespace SourceEngine.Demo.Heatmaps
 
             foreach (var heatmapType in heatmapsToGenerate)
             {
+                Console.WriteLine(string.Concat("Creating heatmap: ", heatmapType));
+
                 Image bmp = new Bitmap(1024, 1024);
 
                 using (var graphics = Graphics.FromImage(bmp))

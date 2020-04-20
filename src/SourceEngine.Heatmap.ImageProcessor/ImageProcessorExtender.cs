@@ -21,7 +21,7 @@ namespace SourceEngine.Demo.Heatmaps.Compatibility
                 //    .Overlay(over)
                 //    .Save(Environment.CurrentDirectory + "/temp/test2.png");
 
-                //Debug.Log("Saved final map to {0}", path);
+                //Console.WriteLine("Saved final map to {0}", path);
 
             }
         }
