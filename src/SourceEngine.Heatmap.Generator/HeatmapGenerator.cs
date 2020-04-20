@@ -27,6 +27,7 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static string inputDataDirectory;
         private static string inputDataFilepathsFile;
+        private static string overviewFilesDirectory;
         private static string heatmapJsonDirectory;
         private static string outputHeatmapDirectory;
 
@@ -36,11 +37,17 @@ namespace SourceEngine.Demo.Heatmaps
                         "Command line parameters:\n\n" +
                         "-inputdatadirectory            [path]                              The folder location of the input data json files (parsed demo data)\n" +
                         "-inputdatafilepathsfile        [path]                              The file location of the text file containing a list of filepaths that contain input json data (parsed demo data)\n" +
+                        "-overviewfilesdirectory        [path]                              The folder location of the overview files (required if generating BombplantLocations or HostageRescueLocations heatmaps)\n" +
                         "-heatmapjsondirectory          [path]                              The folder location of the json for the previously created heatmap files\n" +
                         "-outputheatmapdirectory        [path]                              The folder location to output the generated heatmaps\n" +
                         "-heatmapstogenerate            [names (space seperated)]           A list of heatmap key names to generate\n" +
                         "\n"
-                );
+            );
+        }
+
+        private static void helpTextOverviewRequired()
+        {
+            Debug.WriteLine("-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.");
         }
 
         private static void Main(string[] args)
@@ -73,6 +80,16 @@ namespace SourceEngine.Demo.Heatmaps
                     {
                         inputDataFilepathsFile = args[i + 1];
                         CreateFileIfDoesntExist(args[i + 1]);
+                    }
+
+                    i++;
+                }
+                else if (arg.ToLower() == "-overviewfilesdirectory")
+                {
+                    if (i < args.Count())
+                    {
+                        overviewFilesDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(overviewFilesDirectory));
                     }
 
                     i++;
@@ -129,6 +146,16 @@ namespace SourceEngine.Demo.Heatmaps
                 helpText();
                 return;
             }
+            else if (string.IsNullOrWhiteSpace(overviewFilesDirectory) &&
+                heatmapsToGenerate.Any(x => x.ToLower() == "all" ||
+                                            x.ToLower() == HeatmapTypeNames.BombPlantLocations.ToString().ToLower() ||
+                                            x.ToLower() == HeatmapTypeNames.HostageRescueLocations.ToString().ToLower())
+            )
+            {
+                helpTextOverviewRequired();
+                helpText();
+                return;
+            }
 
             RunHeatmapGenerator(heatmapsToGenerate);
 
@@ -162,7 +189,7 @@ namespace SourceEngine.Demo.Heatmaps
             ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromDirectory);
             ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromTxtFile); // prioritise json from filepathsFromDirectory
 
-            var firstAllStats = allStatsList.First();
+            var firstAllStats = allStatsList.FirstOrDefault();
             var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
             CreateFileIfDoesntExist(heatmapDataFilename);
             var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
@@ -389,8 +416,8 @@ namespace SourceEngine.Demo.Heatmaps
                             DataForPoint2Y = bombsiteB.YPositionMax,
                         };
 
-                        SaveImagePngObjective(overviewInfo, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
-                        SaveImagePngObjective(overviewInfo, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
+                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
+                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
 
                         /*outputFilepath += ".png";
                         SaveImagePng(bmp, outputFilepath);*/
@@ -410,7 +437,7 @@ namespace SourceEngine.Demo.Heatmaps
                             DataForPoint2Y = rescueZone.YPositionMax,
                         };
 
-                        SaveImagePngObjective(overviewInfo, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
+                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
 
                         /*outputFilepath += ".png";
                         SaveImagePng(bmp, outputFilepath);*/
@@ -442,9 +469,9 @@ namespace SourceEngine.Demo.Heatmaps
             img.Save(filepath, ImageFormat.Png);
         }
 
-        private static void SaveImagePngObjective(OverviewInfo overviewInfo, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
+        private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllStats> allStatsList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
         {
-            Bitmap overviewImage = new Bitmap(@"C:\Users\jimmy\Desktop\heatmapstuff\de_mutiny_radar.png"); ///////////////////////////////////////////////
+            Bitmap overviewImage = new Bitmap(string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_radar.png"));
             //overviewImage.SetResolution(96, 96);
 
             var marginMultiplier = 10;
@@ -480,7 +507,7 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static OverviewInfo GetOverviewInfo(List<AllStats> allStatsList)
         {
-            return ReadOverviewTxtFile(string.Concat(@"C:\Users\jimmy\Desktop\heatmapstuff\", allStatsList.FirstOrDefault().mapInfo.MapName, ".txt"));
+            return ReadOverviewTxtFile(string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, ".txt"));
         }
     }
 }
