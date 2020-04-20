@@ -357,6 +357,9 @@ namespace SourceEngine.Demo.Heatmaps
 
                 using (var graphics = Graphics.FromImage(bmp))
                 {
+                    graphics.SmoothingMode =
+                        System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
                     string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allStatsList, graphics);
 
                     graphics.Save();
