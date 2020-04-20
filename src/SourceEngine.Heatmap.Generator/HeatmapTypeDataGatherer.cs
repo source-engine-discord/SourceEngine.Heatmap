@@ -1,4 +1,4 @@
-﻿using SourceEngine.Demo.Parser;
+using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
@@ -174,7 +174,11 @@ namespace SourceEngine.Heatmap.Generator
                                 var transparency = 255 / allStatsList.Sum(x => x.killsStats.Count());
 
                                 Pen pen = side == Sides.Terrorists
-                                            ? PenColours.PenTerrorist(transparency)
+                                            ? heatmapTypeName == HeatmapTypeNames.TKills
+                                                ? PenColours.PenTerroristAllKills(transparency)
+                                                : PenColours.PenTerrorist(transparency)
+                                            : heatmapTypeName == HeatmapTypeNames.CTKills
+                                                ? PenColours.PenCounterTerroristAllKills(transparency)
                                             : PenColours.PenCounterTerrorist(transparency);
 
                                 heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
@@ -375,8 +379,8 @@ namespace SourceEngine.Heatmap.Generator
                                 var transparency = 255 / allStatsList.Sum(x => x.playerPositionsStats.Sum(y => y.PlayerPositionByTimeInRound.Select(z => z.PlayerPositionBySteamID).Count()));
 
                                 Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "t"
-                                            ? PenColours.PenTerrorist(transparency)
-                                            : PenColours.PenCounterTerrorist(transparency);
+                                            ? PenColours.PenTerroristPlayerPosition(transparency)
+                                            : PenColours.PenCounterTerroristPlayerPosition(transparency);
 
                                 /*Pen pen = side == Sides.Terrorists
                                             ? PenColours.PenTerrorist
