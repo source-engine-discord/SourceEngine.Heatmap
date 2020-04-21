@@ -6,44 +6,45 @@ namespace SourceEngine.Heatmap.Generator.Constants
 	public class BrushColours
 	{
 		// Team Sides
-		public static SolidBrush BrushTerrorist(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 204, 102, 0));
-		public static SolidBrush BrushCounterTerrorist(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 51, 153, 255));
+		public static SolidBrush BrushTerrorist(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 204, 102, 0));
+		public static SolidBrush BrushCounterTerrorist(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 51, 153, 255));
 
 		// Bombsites
-		public static SolidBrush BrushBombplant(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 153, 0, 0));
-		public static SolidBrush BrushHostageRescue(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 153, 0, 0));
+		public static SolidBrush BrushBombplant(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 153, 0, 0));
+		public static SolidBrush BrushHostageRescue(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 153, 0, 0));
 
 		// Grenades
-		public static SolidBrush BrushGrenadeSmoke(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 230, 255, 255));
-		public static SolidBrush BrushGrenadeFlash(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 102, 180, 255));
-		public static SolidBrush BrushGrenadeHE(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 128, 102, 255));
-		public static SolidBrush BrushGrenadeIncendiary(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 204, 0, 0));
-		public static SolidBrush BrushGrenadeDecoy(float transparency) => new SolidBrush(Color.FromArgb(GetTransparency(transparency, 10), 102, 230, 153));
+		public static SolidBrush BrushGrenadeSmoke(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 230, 255, 255));
+		public static SolidBrush BrushGrenadeFlash(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 102, 180, 255));
+		public static SolidBrush BrushGrenadeHE(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 128, 102, 255));
+		public static SolidBrush BrushGrenadeIncendiary(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 204, 0, 0));
+		public static SolidBrush BrushGrenadeDecoy(int dataCount) => new SolidBrush(Color.FromArgb(GetTransparency(dataCount, 10), 102, 230, 153));
 
 
 		/// <summary>
-		/// Returns the transparecy value when parsed to an int
+		/// Returns the transparency value when parsed to an int
 		/// </summary>
-		/// <param name="transparency"></param>
+		/// <param name="dataCount"></param>
 		/// <param name="multiplier"></param>
 		/// <returns></returns>
-		public static int GetTransparency(float transparency, int multiplier)
+		public static int GetTransparency(int dataCount, int multiplier)
 		{
-			var newTransparency = (int)Math.Round(transparency);
+			if (dataCount == 0) return 255;
+			else if (dataCount < 0) return 0;
 
-			if (newTransparency < 1)
+			var log = Math.Log(dataCount, multiplier);
+			var transparency = (int)Math.Round(255 / log);
+
+			if (transparency < 1)
 			{
-				newTransparency = 1;
+				transparency = 1;
+			}
+			else if (transparency > 255)
+			{
+				transparency = 255;
 			}
 
-			newTransparency *= multiplier;
-
-			if (newTransparency > 255)
-			{
-				newTransparency = 255;
-			}
-
-			return newTransparency;
+			return transparency;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-using SourceEngine.Demo.Parser;
+﻿using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
@@ -55,34 +55,34 @@ namespace SourceEngine.Heatmap.Generator
 
                 // kills - weapon types
                 case HeatmapTypeNames.PistolKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "pistol");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "pistol");
                     break;
                 case HeatmapTypeNames.SmgKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "smg");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "smg");
                     break;
                 case HeatmapTypeNames.LmgKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "lmg");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "lmg");
                     break;
                 case HeatmapTypeNames.ShotgunKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "shotgun");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "shotgun");
                     break;
                 case HeatmapTypeNames.AssaultRifleKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "assaultrifle");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "assaultrifle");
                     break;
                 case HeatmapTypeNames.SniperKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "sniper");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "sniper");
                     break;
                 case HeatmapTypeNames.GrenadeKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "grenade");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "grenade");
                     break;
                 case HeatmapTypeNames.ZeusKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "zeus");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "zeus");
                     break;
                 case HeatmapTypeNames.KnifeKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "knife");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "knife");
                     break;
                 case HeatmapTypeNames.EquipmentKills:
-                    GenerateHeatmapDataWeaponClassKills(overviewInfo, allStatsList, graphics, "equipment");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "equipment");
                     break;
 
                 // kills - random
@@ -130,6 +130,8 @@ namespace SourceEngine.Heatmap.Generator
 
         public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side, string heatmapTypeName)
         {
+            List<LinePoints> linePointsList = new List<LinePoints>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var kill in allStats.killsStats)
@@ -171,37 +173,42 @@ namespace SourceEngine.Heatmap.Generator
 
                                 LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                                var transparency = 255 / allStatsList.Sum(x => x.killsStats.Count());
-
-                                Pen pen = side == Sides.Terrorists
-                                            ? heatmapTypeName == HeatmapTypeNames.TKills
-                                                ? PenColours.PenTerroristAllKills(transparency)
-                                                : PenColours.PenTerrorist(transparency)
-                                            : heatmapTypeName == HeatmapTypeNames.CTKills
-                                                ? PenColours.PenCounterTerroristAllKills(transparency)
-                                            : PenColours.PenCounterTerrorist(transparency);
-
-                                heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
-
-                                pen.Dispose();
+                                linePointsList.Add(linePoints);
                             }
                         }
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = linePointsList.Count();
+            Pen pen = null;
+            foreach (var linePoints in linePointsList)
+            {
+                pen = side == Sides.Terrorists
+                                               ? heatmapTypeName == HeatmapTypeNames.TKills
+                                                   ? PenColours.PenTerroristAllKills(dataCount)
+                                                   : PenColours.PenTerrorist(dataCount)
+                                               : heatmapTypeName == HeatmapTypeNames.CTKills
+                                                   ? PenColours.PenCounterTerroristAllKills(dataCount)
+                                                   : PenColours.PenCounterTerrorist(dataCount);
+
+                heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+            }
+            pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataWeaponClassKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string weaponType)
+        public void GenerateHeatmapDataWeaponTypeKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string weaponType)
         {
+            List<LinePoints> linePointsList = new List<LinePoints>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var kill in allStats.killsStats)
                 {
-                    var killerWeaponClass = kill.WeaponType?.ToLower();
+                    var killerWeaponType = kill.WeaponType?.ToLower();
 
-                    var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allStats, kill.Round);
-
-                    if (killerWeaponClass == weaponType)
+                    if (killerWeaponType == weaponType)
                     {
                         PointsData pointsData = new PointsData()
                         {
@@ -213,32 +220,40 @@ namespace SourceEngine.Heatmap.Generator
 
                         LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.killsStats.Where(y => y.WeaponType?.ToLower() == weaponType).Count());
-
-                        Pen pen = weaponType switch
-                        {
-                            "pistol" => PenColours.PenWeaponPistol(transparency),
-                            "smg" => PenColours.PenWeaponSMG(transparency),
-                            "lmg" => PenColours.PenWeaponLMG(transparency),
-                            "shotgun" => PenColours.PenWeaponShotgun(transparency),
-                            "assaultrifle" => PenColours.PenWeaponAssaultRifle(transparency),
-                            "sniper" => PenColours.PenWeaponSniper(transparency),
-                            "grenade" => PenColours.PenWeaponGrenade(transparency),
-                            "zeus" => PenColours.PenWeaponZeus(transparency),
-                            "knife" => PenColours.PenWeaponKnife(transparency),
-                            _ => PenColours.PenWeaponEquipment(transparency),
-                        };
-
-                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
-
-                        pen.Dispose();
+                        linePointsList.Add(linePoints);
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = linePointsList.Count();
+            Pen pen = null;
+            foreach (var linePoints in linePointsList)
+            {
+                pen = weaponType switch
+                {
+                    "pistol" => PenColours.PenWeaponPistol(dataCount),
+                    "smg" => PenColours.PenWeaponSMG(dataCount),
+                    "lmg" => PenColours.PenWeaponLMG(dataCount),
+                    "shotgun" => PenColours.PenWeaponShotgun(dataCount),
+                    "assaultrifle" => PenColours.PenWeaponAssaultRifle(dataCount),
+                    "sniper" => PenColours.PenWeaponSniper(dataCount),
+                    "grenade" => PenColours.PenWeaponGrenade(dataCount),
+                    "zeus" => PenColours.PenWeaponZeus(dataCount),
+                    "knife" => PenColours.PenWeaponKnife(dataCount),
+                    _ => PenColours.PenWeaponEquipment(dataCount),
+                };
+
+                heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
+            }
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataWallbangKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<LinePoints> linePointsList = new List<LinePoints>();
+            List<int> penetrationCounts = new List<int>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var kill in allStats.killsStats)
@@ -255,25 +270,35 @@ namespace SourceEngine.Heatmap.Generator
 
                         LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.killsStats.Where(y => y.PenetrationsCount > 0).Count());
-
-                        Pen pen = kill.PenetrationsCount switch
-                        {
-                            1 => PenColours.PenWallbangCountOne(transparency),
-                            2 => PenColours.PenWallbangCountTwo(transparency),
-                            _ => PenColours.PenWallbangCountThreePlus(transparency),
-                        };
-
-                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
-
-                        pen.Dispose();
+                        linePointsList.Add(linePoints);
+                        penetrationCounts.Add(kill.PenetrationsCount);
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = linePointsList.Count();
+            Pen pen = null;
+            for (int i = 0; i < linePointsList.Count(); i++)
+            {
+                pen = penetrationCounts.ElementAt(i) switch
+                {
+                    0 => PenColours.PenWallbangCountOne(-1), // shouldn't happen if data in linePointsList is correct
+                    1 => PenColours.PenWallbangCountOne(dataCount),
+                    2 => PenColours.PenWallbangCountTwo(dataCount),
+                    _ => PenColours.PenWallbangCountThreePlus(dataCount),
+                };
+
+                heatmapLogicCenter.DrawLine(graphics, pen, linePointsList.ElementAt(i));
+            }
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataPlayerPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<LinePoints> linePointsList = new List<LinePoints>();
+            List<string> teamValues = new List<string>();
+
             int allStatsParsedCount = 0;
 
             foreach (var allStats in allStatsList)
@@ -372,24 +397,8 @@ namespace SourceEngine.Heatmap.Generator
 
                             LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                            var maxLineLengthValid = 75;
-                            if (Math.Abs(linePoints.Point1.X - linePoints.Point2.X) <= maxLineLengthValid && Math.Abs(linePoints.Point1.Y - linePoints.Point2.Y) <= maxLineLengthValid) // do not render anomalies
-                            {
-                                var asd = allStatsList.Sum(x => x.playerPositionsStats.Sum(y => y.PlayerPositionByTimeInRound.Select(z => z.PlayerPositionBySteamID).Count()));
-                                var transparency = 255 / allStatsList.Sum(x => x.playerPositionsStats.Sum(y => y.PlayerPositionByTimeInRound.Select(z => z.PlayerPositionBySteamID).Count()));
-
-                                Pen pen = playerPositionsInRound[i].TeamSide.ToLower() == "t"
-                                            ? PenColours.PenTerroristPlayerPosition(transparency)
-                                            : PenColours.PenCounterTerroristPlayerPosition(transparency);
-
-                                /*Pen pen = side == Sides.Terrorists
-                                            ? PenColours.PenTerrorist
-                                            : PenColours.PenCounterTerrorist;*/
-
-                                heatmapLogicCenter.DrawCurve(graphics, pen, linePoints);
-
-                                pen.Dispose();
-                            }
+                            linePointsList.Add(linePoints);
+                            teamValues.Add(playerPositionsInRound[i].TeamSide.ToLower());
                         }
                     }
                 }
@@ -397,10 +406,34 @@ namespace SourceEngine.Heatmap.Generator
                 allStatsParsedCount++;
                 Console.WriteLine(string.Concat("Finished parsing player positions data for demo: ", allStats.mapInfo.DemoName, " - ", allStatsParsedCount, " done."));
             }
+
+            // draw onto the graphics
+            var dataCount = linePointsList.Count();
+            Pen pen = null;
+            for (int i = 0; i < linePointsList.Count(); i++)
+            {
+                var maxLineLengthValid = 75;
+                if (Math.Abs(linePointsList.ElementAt(i).Point1.X - linePointsList.ElementAt(i).Point2.X) <= maxLineLengthValid && Math.Abs(linePointsList.ElementAt(i).Point1.Y - linePointsList.ElementAt(i).Point2.Y) <= maxLineLengthValid) // do not render anomalies
+                {
+                    pen = teamValues.ElementAt(i) == "t"
+                                ? PenColours.PenTerroristPlayerPosition(dataCount)
+                                : PenColours.PenCounterTerroristPlayerPosition(dataCount);
+
+                    /*Pen pen = side == Sides.Terrorists
+                                ? PenColours.PenTerrorist
+                                : PenColours.PenCounterTerrorist;*/
+
+                    heatmapLogicCenter.DrawCurve(graphics, pen, linePointsList.ElementAt(i));
+                }
+            }
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataCampingSpotPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<PointF> singlePointList = new List<PointF>();
+            List<string> teamValues = new List<string>();
+
             foreach (var allStats in allStatsList)
             {
                 var playerSteamIds = allStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
@@ -427,29 +460,39 @@ namespace SourceEngine.Heatmap.Generator
                                 {
                                     PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, campingPosition);
 
-                                    var transparency = 255 / allStatsList.Sum(x => x.playerPositionsStats.Select(y => y.PlayerPositionByTimeInRound.Select(z => z.PlayerPositionBySteamID)).Count());
-
-                                    SolidBrush brush = playerPos.TeamSide.ToLower() == "t"
-                                                ? BrushColours.BrushTerrorist(transparency)
-                                                : BrushColours.BrushCounterTerrorist(transparency);
-                                    Pen pen = playerPos.TeamSide.ToLower() == "t"
-                                                ? PenColours.PenTerrorist(transparency)
-                                                : PenColours.PenCounterTerrorist(transparency);
-
-                                    heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 10);
-
-                                    brush.Dispose();
-                                    pen.Dispose();
+                                    singlePointList.Add(singlePoint);
+                                    teamValues.Add(playerPos.TeamSide.ToLower());
                                 }
                             }
                         }
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = singlePointList.Count();
+            SolidBrush brush = null;
+            Pen pen = null;
+            for (int i = 0; i < singlePointList.Count(); i++)
+            {
+                brush = teamValues.ElementAt(i) == "t"
+                            ? BrushColours.BrushTerrorist(dataCount)
+                            : BrushColours.BrushCounterTerrorist(dataCount);
+                pen = teamValues.ElementAt(i) == "t"
+                            ? PenColours.PenTerrorist(dataCount)
+                            : PenColours.PenCounterTerrorist(dataCount);
+
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePointList.ElementAt(i), 10);
+            }
+            brush?.Dispose();
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataFirstKillPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<LinePoints> linePointsList = new List<LinePoints>();
+            List<string> teamValues = new List<string>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var round in allStats.firstDamageStats)
@@ -466,22 +509,30 @@ namespace SourceEngine.Heatmap.Generator
 
                         LinePoints linePoints = heatmapLogicCenter.CreateLinePoints(overviewInfo, pointsData);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.firstDamageStats.Select(y => y.FirstDamageToEnemyByPlayers).Count());
-
-                        Pen pen = firstDamage.TeamSideShooter.ToLower() == "terrorist"
-                                        ? PenColours.PenTerrorist(transparency)
-                                        : PenColours.PenCounterTerrorist(transparency);
-
-                        heatmapLogicCenter.DrawLine(graphics, pen, linePoints);
-
-                        pen.Dispose();
+                        linePointsList.Add(linePoints);
+                        teamValues.Add(firstDamage.TeamSideShooter.ToLower());
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = linePointsList.Count();
+            Pen pen = null;
+            for (int i = 0; i < linePointsList.Count(); i++)
+            {
+                pen = teamValues.ElementAt(i) == "terrorist"
+                                ? PenColours.PenTerrorist(dataCount)
+                                : PenColours.PenCounterTerrorist(dataCount);
+
+                heatmapLogicCenter.DrawLine(graphics, pen, linePointsList.ElementAt(i));
+            }
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataBombPlantLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<PointF> singlePointList = new List<PointF>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var round in allStats.roundsStats)
@@ -492,22 +543,30 @@ namespace SourceEngine.Heatmap.Generator
 
                         PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, bombPlantLocation);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.roundsStats.Where(y => y.BombsitePlantedAt != null).Count());
-
-                        SolidBrush brush = BrushColours.BrushBombplant(transparency);
-                        Pen pen = PenColours.PenBombplant(transparency);
-
-                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
-
-                        brush.Dispose();
-                        pen.Dispose();
+                        singlePointList.Add(singlePoint);
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = singlePointList.Count();
+            Pen pen = null;
+            SolidBrush brush = null;
+            foreach (var singlePoint in singlePointList)
+            {
+                brush = BrushColours.BrushBombplant(dataCount);
+                pen = PenColours.PenBombplant(dataCount);
+
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+            }
+            brush?.Dispose();
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataHostageRescueLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
         {
+            List<PointF> singlePointList = new List<PointF>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var round in allStats.roundsStats)
@@ -527,22 +586,30 @@ namespace SourceEngine.Heatmap.Generator
                     {
                         PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, location);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.roundsStats.Where(y => y.RescuedHostageA == true || y.RescuedHostageB == true).Count());
-
-                        SolidBrush brush = BrushColours.BrushHostageRescue(transparency);
-                        Pen pen = PenColours.PenHostageRescue(transparency);
-
-                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
-
-                        brush.Dispose();
-                        pen.Dispose();
+                        singlePointList.Add(singlePoint);
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = singlePointList.Count();
+            Pen pen = null;
+            SolidBrush brush = null;
+            foreach (var singlePoint in singlePointList)
+            {
+                brush = BrushColours.BrushHostageRescue(dataCount);
+                pen = PenColours.PenHostageRescue(dataCount);
+
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+            }
+            brush?.Dispose();
+            pen?.Dispose();
         }
 
         public void GenerateHeatmapDataGrenadeLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string grenadeType)
         {
+            List<PointF> singlePointList = new List<PointF>();
+
             foreach (var allStats in allStatsList)
             {
                 foreach (var grenade in allStats.grenadesSpecificStats)
@@ -553,40 +620,46 @@ namespace SourceEngine.Heatmap.Generator
 
                         PointF singlePoint = heatmapLogicCenter.CreateSinglePoint(overviewInfo, location);
 
-                        var transparency = 255 / allStatsList.Sum(x => x.grenadesSpecificStats.Where(y => y.NadeType.ToLower() == "smoke").Count());
-
-                        SolidBrush brush = grenadeType switch
-                        {
-                            "smoke" => BrushColours.BrushGrenadeSmoke(transparency),
-                            "flash" => BrushColours.BrushGrenadeFlash(transparency),
-                            "he" => BrushColours.BrushGrenadeHE(transparency),
-                            "incendiary" => BrushColours.BrushGrenadeIncendiary(transparency),
-                            "decoy" => BrushColours.BrushGrenadeDecoy(transparency),
-                        };
-                        Pen pen = grenadeType switch
-                        {
-                            "smoke" => PenColours.PenGrenadeSmoke(transparency),
-                            "flash" => PenColours.PenGrenadeFlash(transparency),
-                            "he" => PenColours.PenGrenadeHE(transparency),
-                            "incendiary" => PenColours.PenGrenadeIncendiary(transparency),
-                            "decoy" => PenColours.PenGrenadeDecoy(transparency),
-                        };
-                        int diameter = grenadeType switch
-                        {
-                            "smoke" => 20,
-                            "flash" => 6,
-                            "he" => 12,
-                            "incendiary" => 20,
-                            "decoy" => 6,
-                        };
-
-                        heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
-
-                        brush.Dispose();
-                        pen.Dispose();
+                        singlePointList.Add(singlePoint);
                     }
                 }
             }
+
+            // draw onto the graphics
+            var dataCount = singlePointList.Count();
+            Pen pen = null;
+            SolidBrush brush = null;
+            foreach (var singlePoint in singlePointList)
+            {
+                brush = grenadeType switch
+                {
+                    "smoke" => BrushColours.BrushGrenadeSmoke(dataCount),
+                    "flash" => BrushColours.BrushGrenadeFlash(dataCount),
+                    "he" => BrushColours.BrushGrenadeHE(dataCount),
+                    "incendiary" => BrushColours.BrushGrenadeIncendiary(dataCount),
+                    "decoy" => BrushColours.BrushGrenadeDecoy(dataCount),
+                };
+                pen = grenadeType switch
+                {
+                    "smoke" => PenColours.PenGrenadeSmoke(dataCount),
+                    "flash" => PenColours.PenGrenadeFlash(dataCount),
+                    "he" => PenColours.PenGrenadeHE(dataCount),
+                    "incendiary" => PenColours.PenGrenadeIncendiary(dataCount),
+                    "decoy" => PenColours.PenGrenadeDecoy(dataCount),
+                };
+                int diameter = grenadeType switch
+                {
+                    "smoke" => 20,
+                    "flash" => 6,
+                    "he" => 12,
+                    "incendiary" => 20,
+                    "decoy" => 6,
+                };
+
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
+            }
+            brush?.Dispose();
+            pen?.Dispose();
         }
     }
 }
