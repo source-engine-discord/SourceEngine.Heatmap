@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SourceEngine.Demo.Heatmaps.Compatibility;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator;
 using SourceEngine.Heatmap.Generator.Constants;
