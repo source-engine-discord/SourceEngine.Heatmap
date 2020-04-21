@@ -21,7 +21,6 @@ namespace SourceEngine.Demo.Heatmaps
 {
     public class HeatmapGenerator
     {
-        private ImageProcessorExtender imageProcessorExtender = new ImageProcessorExtender();
         private static HeatmapTypeDataGatherer heatmapTypeDataGatherer = new HeatmapTypeDataGatherer();
         private static HeatmapLogicCenter heatmapLogicCenter = new HeatmapLogicCenter();
 
@@ -418,8 +417,6 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void CreateHeatmaps(List<string> heatmapsToGenerate, List<AllStats> allStatsList)
         {
-            //imageProcessorExtender.BlurImage(radarLocation, @"C:\Users\jimmy\Desktop\heatmapstuff\bar1.png"); //blur the image
-
             OverviewInfo overviewInfo = GetOverviewInfo(allStatsList);
 
             if (overviewInfo != null)
