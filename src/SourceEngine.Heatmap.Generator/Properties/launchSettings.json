@@ -2,7 +2,7 @@
   "profiles": {
     "SourceEngine.Heatmap.Generator": {
       "commandName": "Project",
-      "commandLineArgs": "-inputdatadirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\parses\\\\\" -inputdatafilepathsfile \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\inputfilepaths.txt\" -overviewfilesdirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\radarfiles\\\\\" -heatmapjsondirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\heatmapjson\\\\\" -outputheatmapdirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\outputs\\\\\" -heatmapstogenerate all"
+      "commandLineArgs": "-inputdatadirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\parses\\\\\" -inputdatafilepathsfile \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\inputfilepaths.txt\" -overviewfilesdirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\radarfiles\\\\\" -heatmapjsondirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\heatmapjson\\\\\" -outputheatmapdirectory \"C:\\Users\\jimmy\\Desktop\\heatmapstuff\\outputs\\\\\" -heatmapstogenerate playerpositionsbyteam all"
     }
   }
 }

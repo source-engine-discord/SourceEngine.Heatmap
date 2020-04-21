@@ -7,12 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SourceEngine.Demo.Stats" Version="2.2.1" />
+    <PackageReference Include="SourceEngine.Demo.Stats" Version="2.3.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SourceEngine.Heatmap.ImageProcessor\SourceEngine.Heatmap.ImageProcessor.csproj" />
   </ItemGroup>
 
 </Project>

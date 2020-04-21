@@ -5,7 +5,7 @@ namespace SourceEngine.Heatmap.Generator.Models
 {
 	public class MapHeatmapData
 	{
-		public List<AllStats> AllStatsList { get; set; }
+		public List<AllOutputData> AllOutputDataList { get; set; }
 
 		public MapHeatmapData() { }
 	}

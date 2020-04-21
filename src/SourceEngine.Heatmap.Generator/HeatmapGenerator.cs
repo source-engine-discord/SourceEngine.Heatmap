@@ -202,43 +202,43 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
         {
-            var filepathsFromDirectory = new List<string>();
-            var filepathsFromTxtFile = new List<string>();
+            var allStatsFilepathsFromDirectory = new List<string>();
+            var allStatsFilepathsFromTxtFile = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(inputDataDirectory))
             {
-                filepathsFromDirectory = Directory.GetFiles(inputDataDirectory).ToList();
+                allStatsFilepathsFromDirectory = Directory.GetFiles(inputDataDirectory).ToList();
             }
             if (!string.IsNullOrWhiteSpace(inputDataFilepathsFile))
             {
-                filepathsFromTxtFile = GetFilepathsFromInputDataFile();
+                allStatsFilepathsFromTxtFile = GetFilepathsFromInputDataFile();
             }
 
-            var allStatsList = new List<AllStats>();
+            var allOutputDataList = new List<AllOutputData>();
 
             var allStatsMatchIdsDone = new List<string>();
-            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromDirectory);
-            ParseJson(allStatsList, allStatsMatchIdsDone, filepathsFromTxtFile); // prioritise json from filepathsFromDirectory
+            ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromDirectory);
+            ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromTxtFile); // prioritises json from filepathsFromDirectory, so only new matches' data will be added
 
-            var firstAllStats = allStatsList.FirstOrDefault();
+            var firstAllStats = allOutputDataList.FirstOrDefault().AllStats;
             var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
             CreateFileIfDoesntExist(heatmapDataFilename);
             var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
 
             if (heatmapData == null)
             {
-                heatmapData = new MapHeatmapData() { AllStatsList = new List<AllStats>() };
+                heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
             }
 
             // add newly parsed demo data into heatmap data json file
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                heatmapData.AllStatsList.RemoveAll(x => x.mapInfo.DemoName == allStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
-                heatmapData.AllStatsList.Add(allStats);
+                heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
+                heatmapData.AllOutputDataList.Add(allOutputData);
                 OverwriteJsonFile(heatmapData, heatmapDataFilename);
             }
 
-            if (heatmapData.AllStatsList.Count() > 0)
+            if (heatmapData.AllOutputDataList.Count() > 0)
             {
                 if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
                 {
@@ -246,7 +246,7 @@ namespace SourceEngine.Demo.Heatmaps
                 }
 
                 // remove unnecessary defuse specific or hostage specific heatmaps for the map
-                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "defuse" || allStatsList.FirstOrDefault().rescueZoneStats.All(x => x.XPositionMin == null))
+                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse" || allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.All(x => x.XPositionMin == null))
                 {
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
@@ -254,7 +254,7 @@ namespace SourceEngine.Demo.Heatmaps
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
                 }
-                else if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "hostage" || allStatsList.FirstOrDefault().bombsiteStats.All(x => x.XPositionMin == null))
+                else if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "hostage" || allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.All(x => x.XPositionMin == null))
                 {
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
                     heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplant.ToString());
@@ -270,7 +270,7 @@ namespace SourceEngine.Demo.Heatmaps
                     heatmapsToGenerate.Add(HeatmapTypeNames.PlayerPositionsByTeam.ToString());
                 }
 
-                CreateHeatmaps(heatmapsToGenerate, heatmapData.AllStatsList);
+                CreateHeatmaps(heatmapsToGenerate, heatmapData.AllOutputDataList);
             }
             else
             {
@@ -278,22 +278,43 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static void ParseJson(List<AllStats> allStatsList, List<string> allStatsMatchIdsDone, List<string> filepaths)
+        private static void ParseJson(List<AllOutputData> allOutputDataList, List<string> allStatsMatchIdsDone, List<string> allStatsFilepaths)
         {
-            foreach (var filepath in filepaths)
+            foreach (var filepath in allStatsFilepaths.Where(x => !x.Contains("playerpositions")))
             {
-                var json = ReadJsonFile<AllStats>(typeof(AllStats), filepath);
+                var playerPositionsStatsFilepath = string.Empty;
 
-                if (!allStatsMatchIdsDone.Contains(json.mapInfo.DemoName))
+                try
                 {
-                    allStatsMatchIdsDone.Add(json.mapInfo.DemoName);
-                    allStatsList.Add(json);
+                    var allOutputData = new AllOutputData();
 
-                    Console.WriteLine("Finished reading allStats for: " + filepath);
+                    var allStats = ReadJsonFile<AllStats>(typeof(AllStats), filepath);
+
+                    var splitFilepath = filepath.Split(".json");
+                    playerPositionsStatsFilepath = string.Concat(splitFilepath[0], "_playerpositions.json");
+                    var playerPositionsStats = ReadJsonFile<PlayerPositionsStats>(typeof(PlayerPositionsStats), playerPositionsStatsFilepath);
+
+                    if (!allStatsMatchIdsDone.Contains(allStats.mapInfo.DemoName))
+                    {
+                        allStatsMatchIdsDone.Add(allStats.mapInfo.DemoName);
+
+                        allOutputData.AllStats = allStats;
+                        allOutputData.PlayerPositionsStats = playerPositionsStats;
+
+                        allOutputDataList.Add(allOutputData);
+
+                        Console.WriteLine("Finished reading allStats for: " + filepath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("AllStats already found, skipping: " + filepath);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Console.WriteLine("AllStats already found, skipping: " + filepath);
+                    Console.WriteLine("Failed to parse json.");
+                    Console.WriteLine(string.Concat("AllStats filepath: ", filepath));
+                    Console.WriteLine(string.Concat("PlayerPositionsStats filepath: ", playerPositionsStatsFilepath));
                 }
             }
         }
@@ -414,9 +435,9 @@ namespace SourceEngine.Demo.Heatmaps
             return (List<T>)(object)jsonContentsList;
         }
 
-        private static void CreateHeatmaps(List<string> heatmapsToGenerate, List<AllStats> allStatsList)
+        private static void CreateHeatmaps(List<string> heatmapsToGenerate, List<AllOutputData> allOutputDataList)
         {
-            OverviewInfo overviewInfo = GetOverviewInfo(allStatsList);
+            OverviewInfo overviewInfo = GetOverviewInfo(allOutputDataList);
 
             if (overviewInfo != null)
             {
@@ -428,10 +449,9 @@ namespace SourceEngine.Demo.Heatmaps
 
                     using (var graphics = Graphics.FromImage(bmp))
                     {
-                        graphics.SmoothingMode =
-                            System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                        graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                        string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allStatsList, graphics);
+                        string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allOutputDataList, graphics);
 
                         graphics.Save();
 
@@ -442,8 +462,8 @@ namespace SourceEngine.Demo.Heatmaps
                             var bSiteOutputFilepath = outputFilepath + "_bsite.png";
                             var bSiteOutputOverviewFilepath = outputFilepath + "_bsite_overview.png";
 
-                            var bombsiteA = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
-                            var bombsiteB = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
+                            var bombsiteA = allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
+                            var bombsiteB = allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
 
                             PointsData pointsDataASite = new PointsData()
                             {
@@ -463,25 +483,25 @@ namespace SourceEngine.Demo.Heatmaps
                             // save the images (if wingman, only one of the pointsData will contain data)
                             if (pointsDataASite.DataForPoint1X != null || pointsDataASite.DataForPoint1Y != null || pointsDataASite.DataForPoint2X != null || pointsDataASite.DataForPoint2Y != null)
                             {
-                                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "wingman")
+                                SaveImagePngObjective(overviewInfo, allOutputDataList, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
+                            }
+                            else
+                            {
+                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
-                                    SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No data for pointsDataASite even though gamemode is not wingman");
+                                    Console.WriteLine("No data for pointsDataASite even though gamemode is defuse");
                                 }
                             }
 
                             if (pointsDataBSite.DataForPoint1X != null || pointsDataBSite.DataForPoint1Y != null || pointsDataBSite.DataForPoint2X != null || pointsDataBSite.DataForPoint2Y != null)
                             {
-                                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "wingman")
+                                SaveImagePngObjective(overviewInfo, allOutputDataList, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
+                            }
+                            else
+                            {
+                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
-                                    SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("No data for pointsDataBSite even though gamemode is not wingman");
+                                    Console.WriteLine("No data for pointsDataBSite even though gamemode is defuse");
                                 }
                             }
 
@@ -493,7 +513,7 @@ namespace SourceEngine.Demo.Heatmaps
                             var rescueZoneOutputFilepath = outputFilepath + "_rescue_zone.png";
                             var rescueZoneOutputOverviewFilepath = outputFilepath + "_rescue_zone_overview.png";
 
-                            var rescueZone = allStatsList.FirstOrDefault().rescueZoneStats.FirstOrDefault();
+                            var rescueZone = allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.FirstOrDefault();
 
                             PointsData pointsDataRescueZone = new PointsData()
                             {
@@ -503,7 +523,7 @@ namespace SourceEngine.Demo.Heatmaps
                                 DataForPoint2Y = rescueZone.YPositionMax,
                             };
 
-                            SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
+                            SaveImagePngObjective(overviewInfo, allOutputDataList, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
 
                             /*outputFilepath += ".png";
                             SaveImagePng(bmp, outputFilepath);*/
@@ -522,11 +542,11 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static string GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        private static string GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
-            string outputFilepath = string.Concat(outputHeatmapDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_", heatmapType.ToLower());
+            string outputFilepath = string.Concat(outputHeatmapDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "_", heatmapType.ToLower());
 
-            heatmapTypeDataGatherer.GenerateByHeatmapType(heatmapType.ToLower(), overviewInfo, allStatsList, graphics);
+            heatmapTypeDataGatherer.GenerateByHeatmapType(heatmapType.ToLower(), overviewInfo, allOutputDataList, graphics);
 
             return outputFilepath;
         }
@@ -536,9 +556,9 @@ namespace SourceEngine.Demo.Heatmaps
             img.Save(filepath, ImageFormat.Png);
         }
 
-        private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllStats> allStatsList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
+        private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
         {
-            var overviewFilepath = string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_radar.png");
+            var overviewFilepath = string.Concat(overviewFilesDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "_radar.png");
 
             if (File.Exists(overviewFilepath))
             {
@@ -591,9 +611,9 @@ namespace SourceEngine.Demo.Heatmaps
             File.Copy(filepathOriginal, filepathCopy);
         }
 
-        private static OverviewInfo GetOverviewInfo(List<AllStats> allStatsList)
+        private static OverviewInfo GetOverviewInfo(List<AllOutputData> allOutputDataList)
         {
-            return ReadOverviewTxtFile(string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, ".txt"));
+            return ReadOverviewTxtFile(string.Concat(overviewFilesDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, ".txt"));
         }
     }
 }

@@ -17,126 +17,126 @@ namespace SourceEngine.Heatmap.Generator
         public HeatmapTypeDataGatherer()
         { }
 
-        public void GenerateByHeatmapType(string heatmapType, OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateByHeatmapType(string heatmapType, OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             switch (heatmapType.ToLower())
             {
                 // kills - team sides
                 case HeatmapTypeNames.TKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKills);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.Terrorists, HeatmapTypeNames.TKills);
                     break;
                 case HeatmapTypeNames.TKillsBeforeBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeBombplant);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeBombplant);
                     break;
                 case HeatmapTypeNames.TKillsAfterBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterBombplant);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterBombplant);
                     break;
                 case HeatmapTypeNames.TKillsBeforeHostageTaken:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeHostageTaken);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsBeforeHostageTaken);
                     break;
                 case HeatmapTypeNames.TKillsAfterHostageTaken:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterHostageTaken);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.Terrorists, HeatmapTypeNames.TKillsAfterHostageTaken);
                     break;
                 case HeatmapTypeNames.CTKills:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKills);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKills);
                     break;
                 case HeatmapTypeNames.CTKillsBeforeBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeBombplant);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeBombplant);
                     break;
                 case HeatmapTypeNames.CTKillsAfterBombplant:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterBombplant);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterBombplant);
                     break;
                 case HeatmapTypeNames.CTKillsBeforeHostageTaken:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeHostageTaken);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsBeforeHostageTaken);
                     break;
                 case HeatmapTypeNames.CTKillsAfterHostageTaken:
-                    GenerateHeatmapDataTeamKills(overviewInfo, allStatsList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterHostageTaken);
+                    GenerateHeatmapDataTeamKills(overviewInfo, allOutputDataList, graphics, Sides.CounterTerrorists, HeatmapTypeNames.CTKillsAfterHostageTaken);
                     break;
 
                 // kills - weapon types
                 case HeatmapTypeNames.PistolKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "pistol");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "pistol");
                     break;
                 case HeatmapTypeNames.SmgKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "smg");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "smg");
                     break;
                 case HeatmapTypeNames.LmgKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "lmg");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "lmg");
                     break;
                 case HeatmapTypeNames.ShotgunKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "shotgun");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "shotgun");
                     break;
                 case HeatmapTypeNames.AssaultRifleKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "assaultrifle");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "assaultrifle");
                     break;
                 case HeatmapTypeNames.SniperKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "sniper");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "sniper");
                     break;
                 case HeatmapTypeNames.GrenadeKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "grenade");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "grenade");
                     break;
                 case HeatmapTypeNames.ZeusKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "zeus");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "zeus");
                     break;
                 case HeatmapTypeNames.KnifeKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "knife");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "knife");
                     break;
                 case HeatmapTypeNames.EquipmentKills:
-                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allStatsList, graphics, "equipment");
+                    GenerateHeatmapDataWeaponTypeKills(overviewInfo, allOutputDataList, graphics, "equipment");
                     break;
 
                 // kills - random
                 case HeatmapTypeNames.WallbangKills:
-                    GenerateHeatmapDataWallbangKills(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataWallbangKills(overviewInfo, allOutputDataList, graphics);
                     break;
 
                 // positions - players by team
                 case HeatmapTypeNames.PlayerPositionsByTeam:
-                    GenerateHeatmapDataPlayerPositions(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataPlayerPositions(overviewInfo, allOutputDataList, graphics);
                     break;
                 case HeatmapTypeNames.CampingSpotsByTeam:
-                    GenerateHeatmapDataCampingSpotPositions(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataCampingSpotPositions(overviewInfo, allOutputDataList, graphics);
                     break;
                 case HeatmapTypeNames.FirstKillPositionsByTeam:
-                    GenerateHeatmapDataFirstKillPositions(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataFirstKillPositions(overviewInfo, allOutputDataList, graphics);
                     break;
 
                 // locations - objectives
                 case HeatmapTypeNames.BombPlantLocations:
-                    GenerateHeatmapDataBombPlantLocations(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataBombPlantLocations(overviewInfo, allOutputDataList, graphics);
                     break;
                 case HeatmapTypeNames.HostageRescueLocations:
-                    GenerateHeatmapDataHostageRescueLocations(overviewInfo, allStatsList, graphics);
+                    GenerateHeatmapDataHostageRescueLocations(overviewInfo, allOutputDataList, graphics);
                     break;
 
                 // locations - grenades
                 case HeatmapTypeNames.SmokeGrenadeLocations:
-                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "smoke");
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allOutputDataList, graphics, "smoke");
                     break;
                 case HeatmapTypeNames.FlashGrenadeLocations:
-                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "flash");
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allOutputDataList, graphics, "flash");
                     break;
                 case HeatmapTypeNames.HEGrenadeLocations:
-                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "he");
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allOutputDataList, graphics, "he");
                     break;
                 case HeatmapTypeNames.IncendiaryGrenadeLocations:
-                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "incendiary");
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allOutputDataList, graphics, "incendiary");
                     break;
                 case HeatmapTypeNames.DecoyGrenadeLocations:
-                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allStatsList, graphics, "decoy");
+                    GenerateHeatmapDataGrenadeLocations(overviewInfo, allOutputDataList, graphics, "decoy");
                     break;
             }
         }
 
-        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, Sides side, string heatmapTypeName)
+        public void GenerateHeatmapDataTeamKills(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics, Sides side, string heatmapTypeName)
         {
             List<LinePoints> linePointsList = new List<LinePoints>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var kill in allStats.killsStats)
+                foreach (var kill in allOutputData.AllStats.killsStats)
                 {
-                    var round = allStats.roundsStats.Where(x => x.Round == kill.Round).FirstOrDefault();
+                    var round = allOutputData.AllStats.roundsStats.Where(x => x.Round == kill.Round).FirstOrDefault();
 
                     if (round != null)
                     {
@@ -156,10 +156,10 @@ namespace SourceEngine.Heatmap.Generator
                             (heatmapTypeName == HeatmapTypeNames.CTKillsAfterHostageTaken && (hostageRescuedA || hostageRescuedB))
                         )
                         {
-                            var killerTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.KillerSteamID);
-                            var victimTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allStats, kill.Round, kill.VictimSteamID);
+                            var killerTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allOutputData.AllStats, kill.Round, kill.KillerSteamID);
+                            var victimTeam = heatmapLogicCenter.GetTeamOfPlayerInKill(allOutputData.AllStats, kill.Round, kill.VictimSteamID);
 
-                            var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allStats, kill.Round);
+                            var killerSide = heatmapLogicCenter.GetSideOfPlayerInKill(allOutputData.AllStats, kill.Round);
 
                             if (killerTeam != victimTeam && killerSide == side)
                             {
@@ -198,13 +198,13 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataWeaponTypeKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string weaponType)
+        public void GenerateHeatmapDataWeaponTypeKills(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics, string weaponType)
         {
             List<LinePoints> linePointsList = new List<LinePoints>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var kill in allStats.killsStats)
+                foreach (var kill in allOutputData.AllStats.killsStats)
                 {
                     var killerWeaponType = kill.WeaponType?.ToLower();
 
@@ -249,14 +249,14 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataWallbangKills(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataWallbangKills(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<LinePoints> linePointsList = new List<LinePoints>();
             List<int> penetrationCounts = new List<int>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var kill in allStats.killsStats)
+                foreach (var kill in allOutputData.AllStats.killsStats)
                 {
                     if (kill.PenetrationsCount > 0)
                     {
@@ -294,18 +294,18 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataPlayerPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataPlayerPositions(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<LinePoints> linePointsList = new List<LinePoints>();
             List<string> teamValues = new List<string>();
 
             int allStatsParsedCount = 0;
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                var playerSteamIds = allStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
+                var playerSteamIds = allOutputData.AllStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
 
-                foreach (var round in allStats.playerPositionsStats)
+                foreach (var round in allOutputData.PlayerPositionsStats.PlayerPositionByRound)
                 {
                     foreach (var player in playerSteamIds)
                     {
@@ -322,7 +322,7 @@ namespace SourceEngine.Heatmap.Generator
                             else
                             {
                                 var mostRecent = (
-                                    from    roundList in allStats.playerPositionsStats
+                                    from    roundList in allOutputData.PlayerPositionsStats.PlayerPositionByRound
                                     from    timeInRoundList in roundList.PlayerPositionByTimeInRound
                                     from    playerList in timeInRoundList.PlayerPositionBySteamID
                                     where   roundList.Round == round.Round &&
@@ -333,7 +333,7 @@ namespace SourceEngine.Heatmap.Generator
                                 ).FirstOrDefault();
                                 
                                 var closestUpcoming = (
-                                    from    roundList in allStats.playerPositionsStats
+                                    from    roundList in allOutputData.PlayerPositionsStats.PlayerPositionByRound
                                     from    timeInRoundList in roundList.PlayerPositionByTimeInRound
                                     from    playerList in timeInRoundList.PlayerPositionBySteamID
                                     where   roundList.Round == round.Round &&
@@ -404,7 +404,7 @@ namespace SourceEngine.Heatmap.Generator
                 }
 
                 allStatsParsedCount++;
-                Console.WriteLine(string.Concat("Finished parsing player positions data for demo: ", allStats.mapInfo.DemoName, " - ", allStatsParsedCount, " done."));
+                Console.WriteLine(string.Concat("Finished parsing player positions data for demo: ", allOutputData.AllStats.mapInfo.DemoName, " - ", allStatsParsedCount, " done."));
             }
 
             // draw onto the graphics
@@ -429,16 +429,16 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataCampingSpotPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataCampingSpotPositions(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<PointF> singlePointList = new List<PointF>();
             List<string> teamValues = new List<string>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                var playerSteamIds = allStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
+                var playerSteamIds = allOutputData.AllStats.playerStats.Select(x => x.SteamID).Distinct().ToList();
 
-                foreach (var round in allStats.playerPositionsStats)
+                foreach (var round in allOutputData.PlayerPositionsStats.PlayerPositionByRound)
                 {
                     foreach (var player in playerSteamIds)
                     {
@@ -488,14 +488,14 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataFirstKillPositions(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataFirstKillPositions(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<LinePoints> linePointsList = new List<LinePoints>();
             List<string> teamValues = new List<string>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var round in allStats.firstDamageStats)
+                foreach (var round in allOutputData.AllStats.firstDamageStats)
                 {
                     foreach (var firstDamage in round.FirstDamageToEnemyByPlayers)
                     {
@@ -529,13 +529,13 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataBombPlantLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataBombPlantLocations(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<PointF> singlePointList = new List<PointF>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var round in allStats.roundsStats)
+                foreach (var round in allOutputData.AllStats.roundsStats)
                 {
                     if (round.BombsitePlantedAt != null && round.BombPlantPositionX != null && round.BombPlantPositionY != null && round.BombPlantPositionZ != null)
                     {
@@ -563,13 +563,13 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataHostageRescueLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics)
+        public void GenerateHeatmapDataHostageRescueLocations(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
             List<PointF> singlePointList = new List<PointF>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var round in allStats.roundsStats)
+                foreach (var round in allOutputData.AllStats.roundsStats)
                 {
                     List<Vector> hostageRescuedLocations = new List<Vector>();
 
@@ -606,13 +606,13 @@ namespace SourceEngine.Heatmap.Generator
             pen?.Dispose();
         }
 
-        public void GenerateHeatmapDataGrenadeLocations(OverviewInfo overviewInfo, List<AllStats> allStatsList, Graphics graphics, string grenadeType)
+        public void GenerateHeatmapDataGrenadeLocations(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics, string grenadeType)
         {
             List<PointF> singlePointList = new List<PointF>();
 
-            foreach (var allStats in allStatsList)
+            foreach (var allOutputData in allOutputDataList)
             {
-                foreach (var grenade in allStats.grenadesSpecificStats)
+                foreach (var grenade in allOutputData.AllStats.grenadesSpecificStats)
                 {
                     if (grenade.NadeType.ToLower() == grenadeType)
                     {
