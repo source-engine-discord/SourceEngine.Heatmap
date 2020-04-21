@@ -292,7 +292,12 @@ namespace SourceEngine.Demo.Heatmaps
 
                     var splitFilepath = filepath.Split(".json");
                     playerPositionsStatsFilepath = string.Concat(splitFilepath[0], "_playerpositions.json");
-                    var playerPositionsStats = ReadJsonFile<PlayerPositionsStats>(typeof(PlayerPositionsStats), playerPositionsStatsFilepath);
+
+                    PlayerPositionsStats playerPositionsStats = null;
+                    if (File.Exists(playerPositionsStatsFilepath)) // if a PlayerPositionsStats json file has been provided
+                    {
+                        playerPositionsStats = ReadJsonFile<PlayerPositionsStats>(typeof(PlayerPositionsStats), playerPositionsStatsFilepath);
+                    }
 
                     if (!allStatsMatchIdsDone.Contains(allStats.mapInfo.DemoName))
                     {
@@ -310,7 +315,7 @@ namespace SourceEngine.Demo.Heatmaps
                         Console.WriteLine("AllStats already found, skipping: " + filepath);
                     }
                 }
-                catch (Exception e)
+                catch
                 {
                     Console.WriteLine("Failed to parse json.");
                     Console.WriteLine(string.Concat("AllStats filepath: ", filepath));
@@ -581,7 +586,7 @@ namespace SourceEngine.Demo.Heatmaps
                     SaveImagePng(bmpCropObjective, filepathObjective);
                     SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
                 }
-                catch (Exception e)
+                catch
                 {
                     Console.WriteLine("There was an issue copping and saving images in SaveImagePngObjective().");
                     Console.WriteLine(string.Concat("cropObjective: ", cropObjective));
