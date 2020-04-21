@@ -312,6 +312,12 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static OverviewInfo ReadOverviewTxtFile(string filepath)
         {
+            if (!File.Exists(filepath))
+            {
+                Console.WriteLine(string.Concat("Overview .txt file not found, exiting: ", filepath));
+                return null;
+            }
+
             string[] lines = File.ReadAllLines(filepath);
 
             // remove inline comments
@@ -319,7 +325,7 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 for (int j = 0; j < lines[i].Count(); j++)
                 {
-                    if (lines[i][j] == '/' && j + 1 < lines[i].Count() && lines[i][j+1] == '/')
+                    if (lines[i][j] == '/' && j + 1 < lines[i].Count() && lines[i][j + 1] == '/')
                     {
                         lines[i] = lines[i].Substring(0, j);
                     }
@@ -416,82 +422,107 @@ namespace SourceEngine.Demo.Heatmaps
 
             OverviewInfo overviewInfo = GetOverviewInfo(allStatsList);
 
-            foreach (var heatmapType in heatmapsToGenerate)
+            if (overviewInfo != null)
             {
-                Console.WriteLine(string.Concat("Creating heatmap: ", heatmapType));
-
-                Image bmp = new Bitmap(1024, 1024);
-
-                using (var graphics = Graphics.FromImage(bmp))
+                foreach (var heatmapType in heatmapsToGenerate)
                 {
-                    graphics.SmoothingMode =
-                        System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    Console.WriteLine(string.Concat("Creating heatmap: ", heatmapType));
 
-                    string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allStatsList, graphics);
+                    Image bmp = new Bitmap(1024, 1024);
 
-                    graphics.Save();
-
-                    if (heatmapType == HeatmapTypeNames.BombPlantLocations)
+                    using (var graphics = Graphics.FromImage(bmp))
                     {
-                        var aSiteOutputFilepath = outputFilepath + "_asite.png";
-                        var aSiteOutputOverviewFilepath = outputFilepath + "_asite_overview.png";
-                        var bSiteOutputFilepath = outputFilepath + "_bsite.png";
-                        var bSiteOutputOverviewFilepath = outputFilepath + "_bsite_overview.png";
+                        graphics.SmoothingMode =
+                            System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-                        var bombsiteA = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
-                        var bombsiteB = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
+                        string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allStatsList, graphics);
 
-                        PointsData pointsDataASite = new PointsData()
+                        graphics.Save();
+
+                        if (heatmapType == HeatmapTypeNames.BombPlantLocations)
                         {
-                            DataForPoint1X = bombsiteA.XPositionMin,
-                            DataForPoint1Y = bombsiteA.YPositionMin,
-                            DataForPoint2X = bombsiteA.XPositionMax,
-                            DataForPoint2Y = bombsiteA.YPositionMax,
-                        };
-                        PointsData pointsDataBSite = new PointsData()
+                            var aSiteOutputFilepath = outputFilepath + "_asite.png";
+                            var aSiteOutputOverviewFilepath = outputFilepath + "_asite_overview.png";
+                            var bSiteOutputFilepath = outputFilepath + "_bsite.png";
+                            var bSiteOutputOverviewFilepath = outputFilepath + "_bsite_overview.png";
+
+                            var bombsiteA = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
+                            var bombsiteB = allStatsList.FirstOrDefault().bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
+
+                            PointsData pointsDataASite = new PointsData()
+                            {
+                                DataForPoint1X = bombsiteA.XPositionMin,
+                                DataForPoint1Y = bombsiteA.YPositionMin,
+                                DataForPoint2X = bombsiteA.XPositionMax,
+                                DataForPoint2Y = bombsiteA.YPositionMax,
+                            };
+                            PointsData pointsDataBSite = new PointsData()
+                            {
+                                DataForPoint1X = bombsiteB.XPositionMin,
+                                DataForPoint1Y = bombsiteB.YPositionMin,
+                                DataForPoint2X = bombsiteB.XPositionMax,
+                                DataForPoint2Y = bombsiteB.YPositionMax,
+                            };
+
+                            // save the images (if wingman, only one of the pointsData will contain data)
+                            if (pointsDataASite.DataForPoint1X != null || pointsDataASite.DataForPoint1Y != null || pointsDataASite.DataForPoint2X != null || pointsDataASite.DataForPoint2Y != null)
+                            {
+                                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "wingman")
+                                {
+                                    SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No data for pointsDataASite even though gamemode is not wingman");
+                                }
+                            }
+
+                            if (pointsDataBSite.DataForPoint1X != null || pointsDataBSite.DataForPoint1Y != null || pointsDataBSite.DataForPoint2X != null || pointsDataBSite.DataForPoint2Y != null)
+                            {
+                                if (allStatsList.FirstOrDefault().mapInfo.GameMode.ToLower() == "wingman")
+                                {
+                                    SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("No data for pointsDataBSite even though gamemode is not wingman");
+                                }
+                            }
+
+                            /*outputFilepath += ".png";
+                            SaveImagePng(bmp, outputFilepath);*/
+                        }
+                        else if (heatmapType == HeatmapTypeNames.HostageRescueLocations)
                         {
-                            DataForPoint1X = bombsiteB.XPositionMin,
-                            DataForPoint1Y = bombsiteB.YPositionMin,
-                            DataForPoint2X = bombsiteB.XPositionMax,
-                            DataForPoint2Y = bombsiteB.YPositionMax,
-                        };
+                            var rescueZoneOutputFilepath = outputFilepath + "_rescue_zone.png";
+                            var rescueZoneOutputOverviewFilepath = outputFilepath + "_rescue_zone_overview.png";
 
-                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataASite, aSiteOutputFilepath, aSiteOutputOverviewFilepath);
-                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataBSite, bSiteOutputFilepath, bSiteOutputOverviewFilepath);
+                            var rescueZone = allStatsList.FirstOrDefault().rescueZoneStats.FirstOrDefault();
 
-                        /*outputFilepath += ".png";
-                        SaveImagePng(bmp, outputFilepath);*/
-                    }
-                    else if (heatmapType == HeatmapTypeNames.HostageRescueLocations)
-                    {
-                        var rescueZoneOutputFilepath = outputFilepath + "_rescue_zone.png";
-                        var rescueZoneOutputOverviewFilepath = outputFilepath + "_rescue_zone_overview.png";
+                            PointsData pointsDataRescueZone = new PointsData()
+                            {
+                                DataForPoint1X = rescueZone.XPositionMin,
+                                DataForPoint1Y = rescueZone.YPositionMin,
+                                DataForPoint2X = rescueZone.XPositionMax,
+                                DataForPoint2Y = rescueZone.YPositionMax,
+                            };
 
-                        var rescueZone = allStatsList.FirstOrDefault().rescueZoneStats.FirstOrDefault();
+                            SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
 
-                        PointsData pointsDataRescueZone = new PointsData()
+                            /*outputFilepath += ".png";
+                            SaveImagePng(bmp, outputFilepath);*/
+                        }
+                        else
                         {
-                            DataForPoint1X = rescueZone.XPositionMin,
-                            DataForPoint1Y = rescueZone.YPositionMin,
-                            DataForPoint2X = rescueZone.XPositionMax,
-                            DataForPoint2Y = rescueZone.YPositionMax,
-                        };
+                            outputFilepath += ".png";
+                            SaveImagePng(bmp, outputFilepath);
+                        }
 
-                        SaveImagePngObjective(overviewInfo, allStatsList, bmp, pointsDataRescueZone, rescueZoneOutputFilepath, rescueZoneOutputOverviewFilepath);
-
-                        /*outputFilepath += ".png";
-                        SaveImagePng(bmp, outputFilepath);*/
-                    }
-                    else
-                    {
-                        outputFilepath += ".png";
-                        SaveImagePng(bmp, outputFilepath);
+                        bmp = new Bitmap(1024, 1024);
                     }
 
-                    bmp = new Bitmap(1024, 1024);
+                    DisposeImage(bmp);
                 }
-
-                DisposeImage(bmp);
             }
         }
 
@@ -511,20 +542,39 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllStats> allStatsList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
         {
-            Bitmap overviewImage = new Bitmap(string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_radar.png"));
-            //overviewImage.SetResolution(96, 96);
+            var overviewFilepath = string.Concat(overviewFilesDirectory, allStatsList.FirstOrDefault().mapInfo.MapName, "_radar.png");
 
-            var marginMultiplier = 10;
-            Rectangle cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
+            if (File.Exists(overviewFilepath))
+            {
+                Rectangle cropObjective = new Rectangle();
 
-            Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
-            Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
+                try
+                {
+                    Bitmap overviewImage = new Bitmap(overviewFilepath);
+                    //overviewImage.SetResolution(96, 96);
 
-            //bmpCropASite.SetResolution(1024, 1024);
-            //bmpCropBSite.SetResolution(1024, 1024);
+                    var marginMultiplier = 10;
+                    cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
 
-            SaveImagePng(bmpCropObjective, filepathObjective);
-            SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
+                    Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
+                    Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
+
+                    //bmpCropASite.SetResolution(1024, 1024);
+                    //bmpCropBSite.SetResolution(1024, 1024);
+
+                    SaveImagePng(bmpCropObjective, filepathObjective);
+                    SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("There was an issue copping and saving images in SaveImagePngObjective().");
+                    Console.WriteLine(string.Concat("cropObjective: ", cropObjective));
+                }
+            }
+            else
+            {
+                Console.WriteLine(string.Concat("Overview .png file not found, exiting: ", overviewFilepath));
+            }
         }
 
         private static void DeleteFileIfExists(string filepath)
