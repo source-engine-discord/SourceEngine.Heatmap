@@ -254,16 +254,19 @@ namespace SourceEngine.Demo.Heatmaps
 
                 // read the current contents of heatmapData containing old parsed demo information, and write the new parsed demo information to it (overwriting any recurring ones)
                 var retries = 0;
-                var maxRetries = 3;
-                var waitTime = 5; // seconds
+                var maxRetries = 20;
+                var waitTimeSeconds = 5;
                 while (retries < maxRetries)
                 {
                     try
                     {
                         JsonSerializer serializer = new JsonSerializer();
+
                         using (FileStream fs = File.Open(heatmapDataFilename, FileMode.Open))
                         {
-                            if (fs.CanRead)
+                            var fileAccessible = CheckFileIsNotLocked(fs, heatmapDataFilename);
+
+                            if (fileAccessible)
                             {
                                 using (StreamReader sr = new StreamReader(fs))
                                 {
@@ -273,8 +276,6 @@ namespace SourceEngine.Demo.Heatmaps
                                         {
                                             heatmapData = serializer.Deserialize<MapHeatmapData>(reader);
                                         }
-
-                                        //heatmapData = fs.Length > 0 ? ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename) : null;
 
                                         if (heatmapData.AllOutputDataList == null)
                                         {
@@ -294,9 +295,8 @@ namespace SourceEngine.Demo.Heatmaps
                             }
 
                             fs.Close();
+                            break;
                         }
-
-                        break;
                     }
                     catch
                     {
@@ -304,10 +304,10 @@ namespace SourceEngine.Demo.Heatmaps
 
                         if (retries < maxRetries)
                         {
-                            var warningMessage = string.Concat("File has been locked ", retries, " time(s) or user has no permission to access the file. Waiting ", waitTime, " seconds before trying again. Filepath: ", heatmapDataFilename);
+                            var warningMessage = string.Concat("File has been locked ", retries, " time(s) or user has no permission to access the file. Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", heatmapDataFilename);
                             PrintWarningMessage(warningMessage);
 
-                            Thread.Sleep(waitTime * 1000);
+                            Thread.Sleep(waitTimeSeconds * 1000);
                             continue;
                         }
 
@@ -505,23 +505,29 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void OverwriteJsonFile(FileStream fs, object fileContents, string filepath)
         {
+            var fileAccessible = CheckFileIsNotLocked(fs, filepath);
+
+            if (fileAccessible)
+            {
+                fs.Close();
+
+                File.WriteAllText(filepath, string.Empty);
+                File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
+            }
+        }
+
+        private static bool CheckFileIsNotLocked(FileStream fs, string filepath, int maxRetries = 20, int waitTimeSeconds = 5)
+        {
             CreateFileIfDoesntExist(filepath);
 
             var retries = 0;
-            var maxRetries = 3;
-            var waitTime = 5; // seconds
             while (retries < maxRetries)
             {
                 try
                 {
-                    if (fs.CanWrite)
+                    if (fs.CanWrite && fs.CanWrite)
                     {
-                        fs.Close();
-
-                        File.WriteAllText(filepath, string.Empty);
-                        File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
-
-                        break;
+                        return true;
                     }
                 }
                 catch
@@ -530,10 +536,10 @@ namespace SourceEngine.Demo.Heatmaps
 
                     if (retries < maxRetries)
                     {
-                        var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTime, " seconds before trying again. Filepath: ", filepath);
+                        var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", filepath);
                         PrintWarningMessage(warningMessage);
 
-                        Thread.Sleep(waitTime * 1000);
+                        Thread.Sleep(waitTimeSeconds * 1000);
                         continue;
                     }
 
@@ -541,6 +547,8 @@ namespace SourceEngine.Demo.Heatmaps
                     PrintErrorMessage(errorMessage);
                 }
             }
+
+            return false;
         }
 
         private static T ReadJsonFile<T>(Type type, string filename)
