@@ -15,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace SourceEngine.Demo.Heatmaps
 {
@@ -48,12 +49,14 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void helpTextOverviewRequired()
         {
-            Console.WriteLine("-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.");
+            var errorMessage = "-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.";
+            PrintErrorMessage(errorMessage);
         }
 
         private static void helpTextInvalidHeatmapNameProvided(string invalidHeatmapName)
         {
-            Console.WriteLine(string.Concat("Invalid heatmap name provided: ", invalidHeatmapName));
+            var errorMessage = string.Concat("Invalid heatmap name provided: ", invalidHeatmapName);
+            PrintErrorMessage(errorMessage);
         }
 
         private static void Main(string[] args)
@@ -181,7 +184,8 @@ namespace SourceEngine.Demo.Heatmaps
 
             RunHeatmapGenerator(heatmapsToGenerate);
 
-            Console.WriteLine("Finished generating heatmaps.");
+            var successMessage = "Finished generating heatmaps.";
+            PrintSuccessMessage(successMessage);
         }
 
         private static void CreateDirectoryIfDoesntExist(DirectoryInfo directoryInfo)
@@ -198,6 +202,27 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 File.Create(filepath).Close();
             }
+        }
+
+        private static void PrintSuccessMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static void PrintWarningMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static void PrintErrorMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
 
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
@@ -225,22 +250,74 @@ namespace SourceEngine.Demo.Heatmaps
                 var firstAllStats = allOutputDataList.FirstOrDefault().AllStats;
                 var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
                 CreateFileIfDoesntExist(heatmapDataFilename);
-                var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
+                MapHeatmapData heatmapData = new MapHeatmapData();
 
-                if (heatmapData == null)
+                // read the current contents of heatmapData containing old parsed demo information, and write the new parsed demo information to it (overwriting any recurring ones)
+                var retries = 0;
+                var maxRetries = 3;
+                var waitTime = 5; // seconds
+                while (retries < maxRetries)
                 {
-                    heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
+                    try
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        using (FileStream fs = File.Open(heatmapDataFilename, FileMode.Open))
+                        {
+                            if (fs.CanRead)
+                            {
+                                using (StreamReader sr = new StreamReader(fs))
+                                {
+                                    using (JsonReader reader = new JsonTextReader(sr))
+                                    {
+                                        while (!sr.EndOfStream)
+                                        {
+                                            heatmapData = serializer.Deserialize<MapHeatmapData>(reader);
+                                        }
+
+                                        //heatmapData = fs.Length > 0 ? ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename) : null;
+
+                                        if (heatmapData.AllOutputDataList == null)
+                                        {
+                                            heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
+                                        }
+
+                                        // add newly parsed demo data into heatmap data json file
+                                        foreach (var allOutputData in allOutputDataList)
+                                        {
+                                            heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
+                                            heatmapData.AllOutputDataList.Add(allOutputData);
+                                        }
+
+                                        OverwriteJsonFile(fs, heatmapData, heatmapDataFilename); // output all parsed json data to the map's heatmapdata.json file
+                                    }
+                                }
+                            }
+
+                            fs.Close();
+                        }
+
+                        break;
+                    }
+                    catch
+                    {
+                        retries++;
+
+                        if (retries < maxRetries)
+                        {
+                            var warningMessage = string.Concat("File has been locked ", retries, " time(s) or user has no permission to access the file. Waiting ", waitTime, " seconds before trying again. Filepath: ", heatmapDataFilename);
+                            PrintWarningMessage(warningMessage);
+
+                            Thread.Sleep(waitTime * 1000);
+                            continue;
+                        }
+
+                        var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times or user has no permission to access the file (this may result in lost data in future if not rerun). Filepath: ", heatmapDataFilename);
+                        PrintErrorMessage(errorMessage);
+                    }
                 }
 
-                // add newly parsed demo data into heatmap data json file
-                foreach (var allOutputData in allOutputDataList)
-                {
-                    heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
-                    heatmapData.AllOutputDataList.Add(allOutputData);
-                    OverwriteJsonFile(heatmapData, heatmapDataFilename);
-                }
-
-                if (heatmapData.AllOutputDataList.Count() > 0)
+                // create the heatmaps after checking for incompatible heatmaps requested
+                if (heatmapData.AllOutputDataList?.Count() > 0)
                 {
                     if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
                     {
@@ -276,12 +353,14 @@ namespace SourceEngine.Demo.Heatmaps
                 }
                 else
                 {
-                    Console.WriteLine("No AllStats instances (parsed demo data) found.");
+                    var errorMessage = "No AllStats instances (parsed demo data) found.";
+                    PrintErrorMessage(errorMessage);
                 }
             }
             else
             {
-                Console.WriteLine("No files found.");
+                var errorMessage = "No files found.";
+                PrintErrorMessage(errorMessage);
             }
         }
 
@@ -324,9 +403,8 @@ namespace SourceEngine.Demo.Heatmaps
                 }
                 catch
                 {
-                    Console.WriteLine("Failed to parse json.");
-                    Console.WriteLine(string.Concat("AllStats filepath: ", filepath));
-                    Console.WriteLine(string.Concat("PlayerPositionsStats filepath: ", playerPositionsStatsFilepath));
+                    var errorMessage = string.Concat("Failed to parse json. AllStats filepath: ", filepath, "PlayerPositionsStats filepath: ", playerPositionsStatsFilepath);
+                    PrintErrorMessage(errorMessage);
                 }
             }
         }
@@ -345,7 +423,9 @@ namespace SourceEngine.Demo.Heatmaps
         {
             if (!File.Exists(filepath))
             {
-                Console.WriteLine(string.Concat("Overview .txt file not found, exiting: ", filepath));
+                var errorMessage = string.Concat("Overview .txt file not found, exiting: ", filepath);
+                PrintErrorMessage(errorMessage);
+
                 return null;
             }
 
@@ -423,10 +503,44 @@ namespace SourceEngine.Demo.Heatmaps
             return overviewInfo;
         }
 
-        private static void OverwriteJsonFile(object fileContents, string filepath)
+        private static void OverwriteJsonFile(FileStream fs, object fileContents, string filepath)
         {
-            File.WriteAllText(filepath, string.Empty);
-            File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
+            CreateFileIfDoesntExist(filepath);
+
+            var retries = 0;
+            var maxRetries = 3;
+            var waitTime = 5; // seconds
+            while (retries < maxRetries)
+            {
+                try
+                {
+                    if (fs.CanWrite)
+                    {
+                        fs.Close();
+
+                        File.WriteAllText(filepath, string.Empty);
+                        File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
+
+                        break;
+                    }
+                }
+                catch
+                {
+                    retries++;
+
+                    if (retries < maxRetries)
+                    {
+                        var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTime, " seconds before trying again. Filepath: ", filepath);
+                        PrintWarningMessage(warningMessage);
+
+                        Thread.Sleep(waitTime * 1000);
+                        continue;
+                    }
+
+                    var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times (this may result in lost data in future if not rerun). Filepath: ", filepath);
+                    PrintErrorMessage(errorMessage);
+                }
+            }
         }
 
         private static T ReadJsonFile<T>(Type type, string filename)
@@ -449,6 +563,8 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void CreateHeatmaps(List<string> heatmapsToGenerate, List<AllOutputData> allOutputDataList)
         {
+            Console.WriteLine(string.Concat("Creating heatmaps for map: ", allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName));
+
             OverviewInfo overviewInfo = GetOverviewInfo(allOutputDataList);
 
             if (overviewInfo != null)
@@ -501,7 +617,8 @@ namespace SourceEngine.Demo.Heatmaps
                             {
                                 if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
-                                    Console.WriteLine("No data for pointsDataASite even though gamemode is defuse");
+                                    var warningMessage = "No data for pointsDataASite even though gamemode is defuse";
+                                    PrintWarningMessage(warningMessage);
                                 }
                             }
 
@@ -513,7 +630,8 @@ namespace SourceEngine.Demo.Heatmaps
                             {
                                 if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
-                                    Console.WriteLine("No data for pointsDataBSite even though gamemode is defuse");
+                                    var warningMessage = "No data for pointsDataBSite even though gamemode is defuse";
+                                    PrintWarningMessage(warningMessage);
                                 }
                             }
 
@@ -595,13 +713,14 @@ namespace SourceEngine.Demo.Heatmaps
                 }
                 catch
                 {
-                    Console.WriteLine("There was an issue copping and saving images in SaveImagePngObjective().");
-                    Console.WriteLine(string.Concat("cropObjective: ", cropObjective));
+                    var errorMessage = string.Concat("There was an issue copping and saving images in SaveImagePngObjective(). cropObjective: ", cropObjective);
+                    PrintErrorMessage(errorMessage);
                 }
             }
             else
             {
-                Console.WriteLine(string.Concat("Overview .png file not found, exiting: ", overviewFilepath));
+                var errorMessage = string.Concat("Overview .png file not found, cannot create objective heatmaps. Filepath: ", overviewFilepath);
+                PrintErrorMessage(errorMessage);
             }
         }
 
