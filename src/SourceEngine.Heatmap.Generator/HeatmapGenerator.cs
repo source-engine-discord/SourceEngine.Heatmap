@@ -3,15 +3,12 @@ using Newtonsoft.Json.Linq;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator;
 using SourceEngine.Heatmap.Generator.Constants;
-using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -253,67 +250,24 @@ namespace SourceEngine.Demo.Heatmaps
                 MapHeatmapData heatmapData = new MapHeatmapData();
 
                 // read the current contents of heatmapData containing old parsed demo information, and write the new parsed demo information to it (overwriting any recurring ones)
-                var retries = 0;
-                var maxRetries = 20;
-                var waitTimeSeconds = 5;
-                while (retries < maxRetries)
+                var fileAccessible = CheckFileIsNotLocked(heatmapDataFilename, false, true, false);
+                if (fileAccessible)
                 {
-                    try
+                    heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename); // read previously parsed json from the heatmapData.json file for this map
+
+                    if (heatmapData == null)
                     {
-                        JsonSerializer serializer = new JsonSerializer();
-
-                        using (FileStream fs = File.Open(heatmapDataFilename, FileMode.Open))
-                        {
-                            var fileAccessible = CheckFileIsNotLocked(fs, heatmapDataFilename, false, false);
-
-                            if (fileAccessible)
-                            {
-                                using (StreamReader sr = new StreamReader(fs))
-                                {
-                                    using (JsonReader reader = new JsonTextReader(sr))
-                                    {
-                                        while (!sr.EndOfStream)
-                                        {
-                                            heatmapData = serializer.Deserialize<MapHeatmapData>(reader);
-                                        }
-
-                                        if (heatmapData.AllOutputDataList == null)
-                                        {
-                                            heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
-                                        }
-
-                                        // add newly parsed demo data into heatmap data json file
-                                        foreach (var allOutputData in allOutputDataList)
-                                        {
-                                            heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
-                                            heatmapData.AllOutputDataList.Add(allOutputData);
-                                        }
-
-                                        OverwriteJsonFile(fs, heatmapData, heatmapDataFilename); // output all parsed json data to the map's heatmapdata.json file
-                                    }
-                                }
-                            }
-
-                            fs.Close();
-                            break;
-                        }
+                        heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
                     }
-                    catch
+
+                    // add newly parsed demo data into heatmap data json file
+                    foreach (var allOutputData in allOutputDataList)
                     {
-                        retries++;
-
-                        if (retries < maxRetries)
-                        {
-                            var warningMessage = string.Concat("File has been locked ", retries, " time(s) or user has no permission to access the file. Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", heatmapDataFilename);
-                            PrintWarningMessage(warningMessage);
-
-                            Thread.Sleep(waitTimeSeconds * 1000);
-                            continue;
-                        }
-
-                        var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times or user has no permission to access the file (this may result in lost data in future if not rerun). Filepath: ", heatmapDataFilename);
-                        PrintErrorMessage(errorMessage);
+                        heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
+                        heatmapData.AllOutputDataList.Add(allOutputData);
                     }
+
+                    OverwriteJsonFile(heatmapData, heatmapDataFilename); // output all parsed json data to the map's heatmapdata.json file
                 }
 
                 // create the heatmaps after checking for incompatible heatmaps requested
@@ -503,72 +457,77 @@ namespace SourceEngine.Demo.Heatmaps
             return overviewInfo;
         }
 
-        private static void OverwriteJsonFile(FileStream fs, object fileContents, string filepath)
+        private static void OverwriteJsonFile(object fileContents, string filepath)
         {
-            var fileAccessible = CheckFileIsNotLocked(fs, filepath, false);
+            var fileAccessible = CheckFileIsNotLocked(filepath, false);
 
             if (fileAccessible)
             {
-                fs.Close();
-
                 File.WriteAllText(filepath, string.Empty);
                 File.WriteAllText(filepath, JsonConvert.SerializeObject(fileContents, Formatting.Indented));
             }
         }
 
-        private static bool CheckFileIsNotLocked(FileStream fs, string filepath, bool isImageFile, bool closeFileStream = true, int maxRetries = 20, int waitTimeSeconds = 5)
+        private static bool CheckFileIsNotLocked(string filepath, bool isImageFile, bool checkRead = true, bool checkWrite = true, int maxRetries = 20, int waitTimeSeconds = 5)
         {
             CreateFileIfDoesntExist(filepath);
+
+            var fileReadable = false;
+            var fileWriteable = false;
 
             var retries = 0;
             while (retries < maxRetries)
             {
                 try
                 {
-                    if (fs == null)
+                    if (checkRead)
                     {
-                        fs = File.Open(filepath, FileMode.Open);
-                        closeFileStream = true;
+                        using (FileStream fs = File.OpenRead(filepath))
+                        {
+                            if (fs.CanRead)
+                            {
+                                fileReadable = true;
+                            }
+                        }
+                    }
+                    if (checkWrite)
+                    {
+                        using (FileStream fs = File.OpenWrite(filepath))
+                        {
+                            if (fs.CanWrite)
+                            {
+                                fileWriteable = true;
+                            }
+                        }
                     }
 
-                    if (fs.CanWrite && fs.CanWrite)
+                    if ((!checkRead || fileReadable) && (!checkWrite || fileWriteable))
                     {
-                        if (closeFileStream)
-                        {
-                            fs.Close();
-                        }
-
                         return true;
                     }
                 }
-                catch
+                catch { }
+
+                retries++;
+
+                if (retries < maxRetries)
                 {
-                    retries++;
+                    var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", filepath);
+                    PrintWarningMessage(warningMessage);
 
-                    if (retries < maxRetries)
-                    {
-                        var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", filepath);
-                        PrintWarningMessage(warningMessage);
-
-                        Thread.Sleep(waitTimeSeconds * 1000);
-                        continue;
-                    }
-
-                    var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times ");
-                    if (isImageFile)
-                        errorMessage += string.Concat("(heatmap image will not be created/updated).");
-                    else
-                        errorMessage += string.Concat("(this may result in lost data in future if not rerun).");
-
-                    errorMessage += string.Concat(" Filepath: ", filepath);
-                    PrintErrorMessage(errorMessage);
+                    Thread.Sleep(waitTimeSeconds * 1000);
+                    continue;
                 }
             }
 
-            if (closeFileStream)
-            {
-                fs.Close();
-            }
+            var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times ");
+            if (isImageFile)
+                errorMessage += string.Concat("(heatmap image will not be created/updated).");
+            else
+                errorMessage += string.Concat("(this may result in lost data in future if not rerun).");
+
+            errorMessage += string.Concat(" Filepath: ", filepath);
+            PrintErrorMessage(errorMessage);
 
             return false;
         }
@@ -718,7 +677,7 @@ namespace SourceEngine.Demo.Heatmaps
             // check if the files are locked
             if (File.Exists(filepath))
             {
-                var fileAccessible = CheckFileIsNotLocked(null, filepath, true);
+                var fileAccessible = CheckFileIsNotLocked(filepath, true, true, true);
 
                 if (fileAccessible)
                 {
@@ -749,8 +708,8 @@ namespace SourceEngine.Demo.Heatmaps
                 // check if the files are locked
                 if (File.Exists(filepathObjective) || File.Exists(filepathObjectiveOverview))
                 {
-                    var fileAccessible = CheckFileIsNotLocked(null, filepathObjective, true);
-                    var fileOverviewAccessible = CheckFileIsNotLocked(null, filepathObjectiveOverview, true);
+                    var fileAccessible = CheckFileIsNotLocked(filepathObjective, true, true, true);
+                    var fileOverviewAccessible = CheckFileIsNotLocked(filepathObjectiveOverview, true, true, true);
 
                     if (fileAccessible && fileOverviewAccessible)
                     {
