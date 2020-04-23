@@ -220,61 +220,68 @@ namespace SourceEngine.Demo.Heatmaps
             ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromDirectory);
             ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromTxtFile); // prioritises json from filepathsFromDirectory, so only new matches' data will be added
 
-            var firstAllStats = allOutputDataList.FirstOrDefault().AllStats;
-            var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
-            CreateFileIfDoesntExist(heatmapDataFilename);
-            var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
-
-            if (heatmapData == null)
+            if (allOutputDataList.Count() > 0)
             {
-                heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
-            }
+                var firstAllStats = allOutputDataList.FirstOrDefault().AllStats;
+                var heatmapDataFilename = string.Concat(heatmapJsonDirectory, firstAllStats.mapInfo.MapName, Filenames.HeatmapDataFilenameEnding);
+                CreateFileIfDoesntExist(heatmapDataFilename);
+                var heatmapData = ReadJsonFile<MapHeatmapData>(typeof(MapHeatmapData), heatmapDataFilename);
 
-            // add newly parsed demo data into heatmap data json file
-            foreach (var allOutputData in allOutputDataList)
-            {
-                heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
-                heatmapData.AllOutputDataList.Add(allOutputData);
-                OverwriteJsonFile(heatmapData, heatmapDataFilename);
-            }
-
-            if (heatmapData.AllOutputDataList.Count() > 0)
-            {
-                if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
+                if (heatmapData == null)
                 {
-                    heatmapsToGenerate = validHeatmapTypeNames;
+                    heatmapData = new MapHeatmapData() { AllOutputDataList = new List<AllOutputData>() };
                 }
 
-                // remove unnecessary defuse specific or hostage specific heatmaps for the map
-                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse" || allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.All(x => x.XPositionMin == null))
+                // add newly parsed demo data into heatmap data json file
+                foreach (var allOutputData in allOutputDataList)
                 {
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeHostageTaken.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
-                }
-                else if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "hostage" || allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.All(x => x.XPositionMin == null))
-                {
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplant.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplant.ToString());
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
+                    heatmapData.AllOutputDataList.RemoveAll(x => x.AllStats.mapInfo.DemoName == allOutputData.AllStats.mapInfo.DemoName); // replace matches that appear in the previously created heatmap files with the newly parsed information in allStatsList
+                    heatmapData.AllOutputDataList.Add(allOutputData);
+                    OverwriteJsonFile(heatmapData, heatmapDataFilename);
                 }
 
-                // always put playerpositionsbyteam heatmap last as it takes much longer than the others
-                if (heatmapsToGenerate.Any(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString()))
+                if (heatmapData.AllOutputDataList.Count() > 0)
                 {
-                    heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString());
-                    heatmapsToGenerate.Add(HeatmapTypeNames.PlayerPositionsByTeam.ToString());
-                }
+                    if (heatmapsToGenerate.Any(x => x.ToLower() == "all"))
+                    {
+                        heatmapsToGenerate = validHeatmapTypeNames;
+                    }
 
-                CreateHeatmaps(heatmapsToGenerate, heatmapData.AllOutputDataList);
+                    // remove unnecessary defuse specific or hostage specific heatmaps for the map
+                    if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse" || allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.All(x => x.XPositionMin == null))
+                    {
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
+                    }
+                    else if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "hostage" || allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.All(x => x.XPositionMin == null))
+                    {
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
+                    }
+
+                    // always put playerpositionsbyteam heatmap last as it takes much longer than the others
+                    if (heatmapsToGenerate.Any(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString()))
+                    {
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString());
+                        heatmapsToGenerate.Add(HeatmapTypeNames.PlayerPositionsByTeam.ToString());
+                    }
+
+                    CreateHeatmaps(heatmapsToGenerate, heatmapData.AllOutputDataList);
+                }
+                else
+                {
+                    Console.WriteLine("No AllStats instances (parsed demo data) found.");
+                }
             }
             else
             {
-                Console.WriteLine("No AllStats instances (parsed demo data) found.");
+                Console.WriteLine("No files found.");
             }
         }
 
