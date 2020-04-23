@@ -264,7 +264,7 @@ namespace SourceEngine.Demo.Heatmaps
 
                         using (FileStream fs = File.Open(heatmapDataFilename, FileMode.Open))
                         {
-                            var fileAccessible = CheckFileIsNotLocked(fs, heatmapDataFilename);
+                            var fileAccessible = CheckFileIsNotLocked(fs, heatmapDataFilename, false, false);
 
                             if (fileAccessible)
                             {
@@ -505,7 +505,7 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void OverwriteJsonFile(FileStream fs, object fileContents, string filepath)
         {
-            var fileAccessible = CheckFileIsNotLocked(fs, filepath);
+            var fileAccessible = CheckFileIsNotLocked(fs, filepath, false);
 
             if (fileAccessible)
             {
@@ -516,7 +516,7 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static bool CheckFileIsNotLocked(FileStream fs, string filepath, int maxRetries = 20, int waitTimeSeconds = 5)
+        private static bool CheckFileIsNotLocked(FileStream fs, string filepath, bool isImageFile, bool closeFileStream = true, int maxRetries = 20, int waitTimeSeconds = 5)
         {
             CreateFileIfDoesntExist(filepath);
 
@@ -525,8 +525,19 @@ namespace SourceEngine.Demo.Heatmaps
             {
                 try
                 {
+                    if (fs == null)
+                    {
+                        fs = File.Open(filepath, FileMode.Open);
+                        closeFileStream = true;
+                    }
+
                     if (fs.CanWrite && fs.CanWrite)
                     {
+                        if (closeFileStream)
+                        {
+                            fs.Close();
+                        }
+
                         return true;
                     }
                 }
@@ -543,9 +554,20 @@ namespace SourceEngine.Demo.Heatmaps
                         continue;
                     }
 
-                    var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times (this may result in lost data in future if not rerun). Filepath: ", filepath);
+                    var errorMessage = string.Concat("SKIPPING! File has been locked ", maxRetries, " times ");
+                    if (isImageFile)
+                        errorMessage += string.Concat("(heatmap image will not be created/updated).");
+                    else
+                        errorMessage += string.Concat("(this may result in lost data in future if not rerun).");
+
+                    errorMessage += string.Concat(" Filepath: ", filepath);
                     PrintErrorMessage(errorMessage);
                 }
+            }
+
+            if (closeFileStream)
+            {
+                fs.Close();
             }
 
             return false;
@@ -691,38 +713,82 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void SaveImagePng(Image img, string filepath)
         {
-            img.Save(filepath, ImageFormat.Png);
+            var canSave = false;
+
+            // check if the files are locked
+            if (File.Exists(filepath))
+            {
+                var fileAccessible = CheckFileIsNotLocked(null, filepath, true);
+
+                if (fileAccessible)
+                {
+                    canSave = true;
+                }
+            }
+            else
+            {
+                canSave = true;
+            }
+
+            // only create the heatmaps if the files are not locked
+            if (canSave)
+            {
+                img.Save(filepath, ImageFormat.Png);
+            }
         }
 
         private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
         {
+            var canSave = false;
+
             var overviewFilepath = string.Concat(overviewFilesDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "_radar.png");
 
+            // check the overview file exists, cannot do the heatmaps without it
             if (File.Exists(overviewFilepath))
             {
-                Rectangle cropObjective = new Rectangle();
-
-                try
+                // check if the files are locked
+                if (File.Exists(filepathObjective) || File.Exists(filepathObjectiveOverview))
                 {
-                    Bitmap overviewImage = new Bitmap(overviewFilepath);
-                    //overviewImage.SetResolution(96, 96);
+                    var fileAccessible = CheckFileIsNotLocked(null, filepathObjective, true);
+                    var fileOverviewAccessible = CheckFileIsNotLocked(null, filepathObjectiveOverview, true);
 
-                    var marginMultiplier = 10;
-                    cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
-
-                    Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
-                    Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
-
-                    //bmpCropASite.SetResolution(1024, 1024);
-                    //bmpCropBSite.SetResolution(1024, 1024);
-
-                    SaveImagePng(bmpCropObjective, filepathObjective);
-                    SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
+                    if (fileAccessible && fileOverviewAccessible)
+                    {
+                        canSave = true;
+                    }
                 }
-                catch
+                else
                 {
-                    var errorMessage = string.Concat("There was an issue copping and saving images in SaveImagePngObjective(). cropObjective: ", cropObjective);
-                    PrintErrorMessage(errorMessage);
+                    canSave = true;
+                }
+
+                // only create the heatmaps if the files are not locked
+                if (canSave)
+                {
+                    Rectangle cropObjective = new Rectangle();
+
+                    try
+                    {
+                        Bitmap overviewImage = new Bitmap(overviewFilepath);
+                        //overviewImage.SetResolution(96, 96);
+
+                        var marginMultiplier = 10;
+                        cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
+
+                        Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
+                        Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
+
+                        //bmpCropASite.SetResolution(1024, 1024);
+                        //bmpCropBSite.SetResolution(1024, 1024);
+
+                        SaveImagePng(bmpCropObjective, filepathObjective);
+                        SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
+                    }
+                    catch
+                    {
+                        var errorMessage = string.Concat("There was an issue copping and saving images in SaveImagePngObjective(). cropObjective: ", cropObjective);
+                        PrintErrorMessage(errorMessage);
+                    }
                 }
             }
             else
