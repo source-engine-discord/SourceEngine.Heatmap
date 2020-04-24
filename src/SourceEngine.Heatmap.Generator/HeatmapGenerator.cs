@@ -20,6 +20,7 @@ namespace SourceEngine.Demo.Heatmaps
     {
         private static HeatmapTypeDataGatherer heatmapTypeDataGatherer = new HeatmapTypeDataGatherer();
         private static HeatmapLogicCenter heatmapLogicCenter = new HeatmapLogicCenter();
+        private static ConsoleMessageStyler consoleMessageStyler = new ConsoleMessageStyler();
 
         private static HeatmapTypeNames heatmapTypeNames = new HeatmapTypeNames();
         private static List<string> validHeatmapTypeNames = new List<string>();
@@ -47,13 +48,13 @@ namespace SourceEngine.Demo.Heatmaps
         private static void helpTextOverviewRequired()
         {
             var errorMessage = "-overviewfilesdirectory required if generating BombplantLocations or HostageRescueLocations heatmaps.";
-            PrintErrorMessage(errorMessage);
+            consoleMessageStyler.PrintErrorMessage(errorMessage);
         }
 
         private static void helpTextInvalidHeatmapNameProvided(string invalidHeatmapName)
         {
             var errorMessage = string.Concat("Invalid heatmap name provided: ", invalidHeatmapName);
-            PrintErrorMessage(errorMessage);
+            consoleMessageStyler.PrintErrorMessage(errorMessage);
         }
 
         private static void Main(string[] args)
@@ -208,20 +209,6 @@ namespace SourceEngine.Demo.Heatmaps
             Console.ResetColor();
         }
 
-        private static void PrintWarningMessage(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(message);
-            Console.ResetColor();
-        }
-
-        private static void PrintErrorMessage(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine(message);
-            Console.ResetColor();
-        }
-
         private static void RunHeatmapGenerator(List<string> heatmapsToGenerate)
         {
             var allStatsFilepathsFromDirectory = new List<string>();
@@ -290,9 +277,11 @@ namespace SourceEngine.Demo.Heatmaps
                     else if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "hostage" || allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.All(x => x.XPositionMin == null))
                     {
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
-                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplantASite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplantBSite.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
-                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplantASite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplantBSite.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
                     }
 
@@ -308,13 +297,13 @@ namespace SourceEngine.Demo.Heatmaps
                 else
                 {
                     var errorMessage = "No AllStats instances (parsed demo data) found.";
-                    PrintErrorMessage(errorMessage);
+                    consoleMessageStyler.PrintErrorMessage(errorMessage);
                 }
             }
             else
             {
                 var errorMessage = "No files found.";
-                PrintErrorMessage(errorMessage);
+                consoleMessageStyler.PrintErrorMessage(errorMessage);
             }
         }
 
@@ -358,7 +347,7 @@ namespace SourceEngine.Demo.Heatmaps
                 catch
                 {
                     var errorMessage = string.Concat("Failed to parse json. AllStats filepath: ", filepath, "PlayerPositionsStats filepath: ", playerPositionsStatsFilepath);
-                    PrintErrorMessage(errorMessage);
+                    consoleMessageStyler.PrintErrorMessage(errorMessage);
                 }
             }
         }
@@ -378,7 +367,7 @@ namespace SourceEngine.Demo.Heatmaps
             if (!File.Exists(filepath))
             {
                 var errorMessage = string.Concat("Overview .txt file not found, exiting: ", filepath);
-                PrintErrorMessage(errorMessage);
+                consoleMessageStyler.PrintErrorMessage(errorMessage);
 
                 return null;
             }
@@ -513,7 +502,7 @@ namespace SourceEngine.Demo.Heatmaps
                 if (retries < maxRetries)
                 {
                     var warningMessage = string.Concat("File has been locked ", retries, " time(s). Waiting ", waitTimeSeconds, " seconds before trying again. Filepath: ", filepath);
-                    PrintWarningMessage(warningMessage);
+                    consoleMessageStyler.PrintWarningMessage(warningMessage);
 
                     Thread.Sleep(waitTimeSeconds * 1000);
                     continue;
@@ -527,7 +516,7 @@ namespace SourceEngine.Demo.Heatmaps
                 errorMessage += string.Concat("(this may result in lost data in future if not rerun).");
 
             errorMessage += string.Concat(" Filepath: ", filepath);
-            PrintErrorMessage(errorMessage);
+            consoleMessageStyler.PrintErrorMessage(errorMessage);
 
             return false;
         }
@@ -609,7 +598,7 @@ namespace SourceEngine.Demo.Heatmaps
                                 if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
                                     var warningMessage = "No data for pointsDataASite even though gamemode is defuse";
-                                    PrintWarningMessage(warningMessage);
+                                    consoleMessageStyler.PrintWarningMessage(warningMessage);
                                 }
                             }
 
@@ -622,7 +611,7 @@ namespace SourceEngine.Demo.Heatmaps
                                 if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
                                 {
                                     var warningMessage = "No data for pointsDataBSite even though gamemode is defuse";
-                                    PrintWarningMessage(warningMessage);
+                                    consoleMessageStyler.PrintWarningMessage(warningMessage);
                                 }
                             }
 
@@ -757,14 +746,14 @@ namespace SourceEngine.Demo.Heatmaps
                     catch
                     {
                         var errorMessage = string.Concat("There was an issue copping and saving images in SaveImagePngObjective(). cropObjective: ", cropObjective);
-                        PrintErrorMessage(errorMessage);
+                        consoleMessageStyler.PrintErrorMessage(errorMessage);
                     }
                 }
             }
             else
             {
                 var errorMessage = string.Concat("Overview .png file not found, cannot create objective heatmaps. Filepath: ", overviewFilepath);
-                PrintErrorMessage(errorMessage);
+                consoleMessageStyler.PrintErrorMessage(errorMessage);
             }
         }
 

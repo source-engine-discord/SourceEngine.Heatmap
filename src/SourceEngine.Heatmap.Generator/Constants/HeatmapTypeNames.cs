@@ -5,12 +5,14 @@
 		// Kills - Team Sides
 		public const string TKills = "tkills";
 		public const string TKillsBeforeBombplant = "tkillsbeforebombplant";
-		public const string TKillsAfterBombplant = "tkillsafterbombplant";
+		public const string TKillsAfterBombplantASite = "tkillsafterbombplantasite";
+		public const string TKillsAfterBombplantBSite = "tkillsafterbombplantbsite";
 		public const string TKillsBeforeHostageTaken = "tkillsbeforehostagetaken";
 		public const string TKillsAfterHostageTaken = "tkillsafterhostagetaken";
 		public const string CTKills = "ctkills";
 		public const string CTKillsBeforeBombplant = "ctkillsbeforebombplant";
-		public const string CTKillsAfterBombplant = "ctkillsafterbombplant";
+		public const string CTKillsAfterBombplantASite = "ctkillsafterbombplantasite";
+		public const string CTKillsAfterBombplantBSite = "ctkillsafterbombplantbsite";
 		public const string CTKillsBeforeHostageTaken = "ctkillsbeforehostagetaken";
 		public const string CTKillsAfterHostageTaken = "ctkillsafterhostagetaken";
 

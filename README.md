@@ -20,12 +20,14 @@ Heatmap Types
     // Kills - Team Sides
     TKills
     TKillsBeforeBombplant
-    TKillsAfterBombplant
+    TKillsAfterBombplantASite
+    TKillsAfterBombplantBSite
     TKillsBeforeHostageTaken
     TKillsAfterHostageTaken
     CTKills
     CTKillsBeforeBombplant
-    CTKillsAfterBombplant
+    CTKillsAfterBombplantASite
+    CTKillsAfterBombplantBSite
     CTKillsBeforeHostageTaken
     CTKillsAfterHostageTaken
 

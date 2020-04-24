@@ -25,7 +25,7 @@ namespace SourceEngine.Heatmap.Generator.Constants
 
 		// Wallbang Wall Penetration Counts
 		public static Pen PenWallbangCountOne(int dataCount) => new Pen(Color.FromArgb(GetTransparency(dataCount, 50), 0, 255, 0), 1);
-		public static Pen PenWallbangCountTwo(int dataCount) => new Pen(Color.FromArgb(GetTransparency(dataCount, 50), 0, 0, 255), 1);
+		public static Pen PenWallbangCountTwo(int dataCount) => new Pen(Color.FromArgb(GetTransparency(dataCount, 50), 0, 102, 255), 1);
 		public static Pen PenWallbangCountThreePlus(int dataCount) => new Pen(Color.FromArgb(GetTransparency(dataCount, 50), 255, 0, 0), 1);
 
 		// Player Positions
