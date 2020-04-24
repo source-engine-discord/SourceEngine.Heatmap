@@ -670,6 +670,11 @@ namespace SourceEngine.Demo.Heatmaps
             return outputFilepath;
         }
 
+        /// <summary>
+        /// Saves a heatmap image as a png
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="filepath"></param>
         private static void SaveImagePng(Image img, string filepath)
         {
             var canSave = false;
@@ -696,6 +701,15 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
+        /// <summary>
+        /// Saves an objective heatmap (BombsiteLocations / HostageRescueLocations) image as a png
+        /// </summary>
+        /// <param name="overviewInfo"></param>
+        /// <param name="allOutputDataList"></param>
+        /// <param name="img"></param>
+        /// <param name="pointsData"></param>
+        /// <param name="filepathObjective"></param>
+        /// <param name="filepathObjectiveOverview"></param>
         private static void SaveImagePngObjective(OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Image img, PointsData pointsData, string filepathObjective, string filepathObjectiveOverview)
         {
             var canSave = false;
@@ -729,7 +743,6 @@ namespace SourceEngine.Demo.Heatmaps
                     try
                     {
                         Bitmap overviewImage = new Bitmap(overviewFilepath);
-                        //overviewImage.SetResolution(96, 96);
 
                         var marginMultiplier = 10;
                         cropObjective = heatmapLogicCenter.CreateRectangleObjectiveSquarePadding(overviewInfo, pointsData, overviewImage, marginMultiplier);
@@ -737,8 +750,8 @@ namespace SourceEngine.Demo.Heatmaps
                         Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
                         Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
 
-                        //bmpCropASite.SetResolution(1024, 1024);
-                        //bmpCropBSite.SetResolution(1024, 1024);
+                        bmpCropObjective = ResizeImage(bmpCropObjective, 256, 256);
+                        bmpCropObjectiveOverview = ResizeImage(bmpCropObjectiveOverview, 256, 256);
 
                         SaveImagePng(bmpCropObjective, filepathObjective);
                         SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
@@ -755,6 +768,38 @@ namespace SourceEngine.Demo.Heatmaps
                 var errorMessage = string.Concat("Overview .png file not found, cannot create objective heatmaps. Filepath: ", overviewFilepath);
                 PrintErrorMessage(errorMessage);
             }
+        }
+
+        /// <summary>
+        /// Resizes the image provided to a specified width and height
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public static Bitmap ResizeImage(Image image, int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
         }
 
         private static void DeleteFileIfExists(string filepath)
