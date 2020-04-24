@@ -566,7 +566,7 @@ namespace SourceEngine.Demo.Heatmaps
 
                     using (var graphics = Graphics.FromImage(bmp))
                     {
-                        string outputFilepath = string.Concat(outputHeatmapDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "-", heatmapType.ToLower());
+                        string outputFilepath = string.Concat(outputHeatmapDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "_", heatmapType.ToLower());
                         
                         graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -576,10 +576,10 @@ namespace SourceEngine.Demo.Heatmaps
 
                         if (heatmapType == HeatmapTypeNames.BombPlantLocations)
                         {
-                            var aSiteOutputFilepath = outputFilepath + "_asite.png";
-                            var aSiteOutputOverviewFilepath = outputFilepath + "_asite_overview.png";
-                            var bSiteOutputFilepath = outputFilepath + "_bsite.png";
-                            var bSiteOutputOverviewFilepath = outputFilepath + "_bsite_overview.png";
+                            var aSiteOutputFilepath = outputFilepath + "-asite.png";
+                            var aSiteOutputOverviewFilepath = outputFilepath + "-asite-overview.png";
+                            var bSiteOutputFilepath = outputFilepath + "-bsite.png";
+                            var bSiteOutputOverviewFilepath = outputFilepath + "-bsite-overview.png";
 
                             var bombsiteA = allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.Where(x => x.Bombsite == 'A').FirstOrDefault();
                             var bombsiteB = allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.Where(x => x.Bombsite == 'B').FirstOrDefault();
@@ -631,8 +631,8 @@ namespace SourceEngine.Demo.Heatmaps
                         }
                         else if (heatmapType == HeatmapTypeNames.HostageRescueLocations)
                         {
-                            var rescueZoneOutputFilepath = outputFilepath + "_rescue_zone.png";
-                            var rescueZoneOutputOverviewFilepath = outputFilepath + "_rescue_zone_overview.png";
+                            var rescueZoneOutputFilepath = outputFilepath + "-rescue-zone.png";
+                            var rescueZoneOutputOverviewFilepath = outputFilepath + "-rescue-zone-overview.png";
 
                             var rescueZone = allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.FirstOrDefault();
 
