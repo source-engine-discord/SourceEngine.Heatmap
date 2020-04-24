@@ -566,9 +566,11 @@ namespace SourceEngine.Demo.Heatmaps
 
                     using (var graphics = Graphics.FromImage(bmp))
                     {
+                        string outputFilepath = string.Concat(outputHeatmapDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "-", heatmapType.ToLower());
+                        
                         graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                        string outputFilepath = GenerateHeatmapDataByType(heatmapType, overviewInfo, allOutputDataList, graphics);
+                        GenerateHeatmapDataByType(heatmapType, overviewInfo, allOutputDataList, graphics);
 
                         graphics.Save();
 
@@ -661,13 +663,9 @@ namespace SourceEngine.Demo.Heatmaps
             }
         }
 
-        private static string GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
+        private static void GenerateHeatmapDataByType(string heatmapType, OverviewInfo overviewInfo, List<AllOutputData> allOutputDataList, Graphics graphics)
         {
-            string outputFilepath = string.Concat(outputHeatmapDirectory, allOutputDataList.FirstOrDefault().AllStats.mapInfo.MapName, "_", heatmapType.ToLower());
-
             heatmapTypeDataGatherer.GenerateByHeatmapType(heatmapType.ToLower(), overviewInfo, allOutputDataList, graphics);
-
-            return outputFilepath;
         }
 
         /// <summary>
