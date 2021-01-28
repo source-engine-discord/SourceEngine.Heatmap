@@ -78,7 +78,6 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         inputDataDirectory = args[i + 1];
-                        CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataDirectory));
                     }
 
                     i++;
@@ -88,7 +87,6 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         inputDataFilepathsFile = args[i + 1];
-                        CreateFileIfDoesntExist(args[i + 1]);
                     }
 
                     i++;
@@ -98,7 +96,6 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         overviewFilesDirectory = args[i + 1];
-                        CreateDirectoryIfDoesntExist(Directory.GetParent(overviewFilesDirectory));
                     }
 
                     i++;
@@ -108,7 +105,6 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         heatmapJsonDirectory = args[i + 1];
-                        CreateDirectoryIfDoesntExist(Directory.GetParent(heatmapJsonDirectory));
                     }
 
                     i++;
@@ -309,52 +305,61 @@ namespace SourceEngine.Demo.Heatmaps
 
         private static void ParseJson(List<AllOutputData> allOutputDataList, List<string> allStatsMatchIdsDone, List<string> allStatsFilepaths)
         {
-            foreach (var filepath in allStatsFilepaths.Where(x => !x.Contains("playerpositions")))
+            foreach (var filepath in allStatsFilepaths.Where(x => !x.Contains("playerpositions")).ToList())
             {
-                var playerPositionsStatsFilepath = string.Empty;
-
-                try
+                // skip parsing a file if the filename contains "unknown" (this means that the mapname could not be retrieved when parsing the demo)
+                if (filepath.ToLower().Contains("unknown"))
                 {
-                    var allOutputData = new AllOutputData();
-
-                    var allStats = ReadJsonFile<AllStats>(typeof(AllStats), filepath);
-
-                    var splitFilepath = filepath.Split(".json");
-                    playerPositionsStatsFilepath = string.Concat(splitFilepath[0], "_playerpositions.json");
-
-                    PlayerPositionsStats playerPositionsStats = null;
-                    if (File.Exists(playerPositionsStatsFilepath)) // if a PlayerPositionsStats json file has been provided
-                    {
-                        playerPositionsStats = ReadJsonFile<PlayerPositionsStats>(typeof(PlayerPositionsStats), playerPositionsStatsFilepath);
-                    }
-
-                    if (!allStatsMatchIdsDone.Contains(allStats.mapInfo.DemoName))
-                    {
-                        allStatsMatchIdsDone.Add(allStats.mapInfo.DemoName);
-
-                        allOutputData.AllStats = allStats;
-                        allOutputData.PlayerPositionsStats = playerPositionsStats;
-
-                        allOutputDataList.Add(allOutputData);
-
-                        Console.WriteLine("Finished reading allStats for: " + filepath);
-                    }
-                    else
-                    {
-                        Console.WriteLine("AllStats already found, skipping: " + filepath);
-                    }
-                }
-                catch
-                {
-                    var errorMessage = string.Concat("Failed to parse json. AllStats filepath: ", filepath, "PlayerPositionsStats filepath: ", playerPositionsStatsFilepath);
+                    var errorMessage = "Skipping filepath due to unknown mapname: " + filepath;
                     consoleMessageStyler.PrintErrorMessage(errorMessage);
+                }
+                else
+                {
+                    var playerPositionsStatsFilepath = string.Empty;
+
+                    try
+                    {
+                        var allOutputData = new AllOutputData();
+
+                        var allStats = ReadJsonFile<AllStats>(typeof(AllStats), filepath);
+
+                        var splitFilepath = filepath.Split(".json");
+                        playerPositionsStatsFilepath = string.Concat(splitFilepath[0], "_playerpositions.json");
+
+                        PlayerPositionsStats playerPositionsStats = null;
+                        if (File.Exists(playerPositionsStatsFilepath)) // if a PlayerPositionsStats json file has been provided
+                        {
+                            playerPositionsStats = ReadJsonFile<PlayerPositionsStats>(typeof(PlayerPositionsStats), playerPositionsStatsFilepath);
+                        }
+
+                        if (!allStatsMatchIdsDone.Contains(allStats.mapInfo.DemoName))
+                        {
+                            allStatsMatchIdsDone.Add(allStats.mapInfo.DemoName);
+
+                            allOutputData.AllStats = allStats;
+                            allOutputData.PlayerPositionsStats = playerPositionsStats;
+
+                            allOutputDataList.Add(allOutputData);
+
+                            Console.WriteLine("Finished reading allStats for: " + filepath);
+                        }
+                        else
+                        {
+                            Console.WriteLine("AllStats already found, skipping: " + filepath);
+                        }
+                    }
+                    catch
+                    {
+                        var errorMessage = string.Concat("Failed to parse json. AllStats filepath: ", filepath, "PlayerPositionsStats filepath: ", playerPositionsStatsFilepath);
+                        consoleMessageStyler.PrintErrorMessage(errorMessage);
+                    }
                 }
             }
         }
 
         private static List<string> GetFilepathsFromInputDataFile()
         {
-            if (string.IsNullOrWhiteSpace(inputDataFilepathsFile))
+            if (!File.Exists(inputDataFilepathsFile) || string.IsNullOrWhiteSpace(inputDataFilepathsFile))
             {
                 return new List<string>();
             }
