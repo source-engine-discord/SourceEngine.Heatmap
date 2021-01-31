@@ -54,7 +54,7 @@ namespace SourceEngine.Heatmap.Generator.Constants
 			if (dataCount == 0) return 255;
 			else if (dataCount < 0) return 0;
 
-			double multiplier = MultiplierBorders.GetMultiplier(dataCount);
+			double multiplier = TransparencyMultiplierBorders.GetMultiplier(dataCount);
 
 			var log = Math.Log(dataCount, multiplier);
 			var transparency = (int)Math.Round(255 / log);

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SourceEngine.Heatmap.Generator.Constants
 {
-	public static class MultiplierBorders
+	public static class TransparencyMultiplierBorders
 	{
 		public static int border0 = 0;
 		public static int border1 = 1;
