@@ -514,6 +514,8 @@ namespace SourceEngine.Heatmap.Generator
 
             // draw onto the graphics
             var dataCount = singlePointList.Count();
+            var diameter = BrushWidthMultiplierBorders.GetMultiplier(dataCount);
+
             SolidBrush brush = null;
             Pen pen = null;
             for (int i = 0; i < singlePointList.Count(); i++)
@@ -525,7 +527,7 @@ namespace SourceEngine.Heatmap.Generator
                             ? PenColours.PenTerrorist(dataCount)
                             : PenColours.PenCounterTerrorist(dataCount);
 
-                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePointList.ElementAt(i), 10);
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePointList.ElementAt(i), diameter);
             }
             brush?.Dispose();
             pen?.Dispose();
@@ -593,6 +595,8 @@ namespace SourceEngine.Heatmap.Generator
 
             // draw onto the graphics
             var dataCount = singlePointList.Count();
+            var diameter = BrushWidthMultiplierBorders.GetMultiplier(dataCount);
+
             Pen pen = null;
             SolidBrush brush = null;
             foreach (var singlePoint in singlePointList)
@@ -600,7 +604,7 @@ namespace SourceEngine.Heatmap.Generator
                 brush = BrushColours.BrushBombplant(dataCount);
                 pen = PenColours.PenBombplant(dataCount);
 
-                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
             }
             brush?.Dispose();
             pen?.Dispose();
@@ -636,6 +640,8 @@ namespace SourceEngine.Heatmap.Generator
 
             // draw onto the graphics
             var dataCount = singlePointList.Count();
+            var diameter = BrushWidthMultiplierBorders.GetMultiplier(dataCount);
+
             Pen pen = null;
             SolidBrush brush = null;
             foreach (var singlePoint in singlePointList)
@@ -643,7 +649,7 @@ namespace SourceEngine.Heatmap.Generator
                 brush = BrushColours.BrushHostageRescue(dataCount);
                 pen = PenColours.PenHostageRescue(dataCount);
 
-                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, 4);
+                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
             }
             brush?.Dispose();
             pen?.Dispose();
@@ -670,6 +676,8 @@ namespace SourceEngine.Heatmap.Generator
 
             // draw onto the graphics
             var dataCount = singlePointList.Count();
+            var diameter = BrushWidthMultiplierBorders.GetMultiplier(dataCount);
+
             Pen pen = null;
             SolidBrush brush = null;
             foreach (var singlePoint in singlePointList)
@@ -681,23 +689,18 @@ namespace SourceEngine.Heatmap.Generator
                     "he" => BrushColours.BrushGrenadeHE(dataCount),
                     "incendiary" => BrushColours.BrushGrenadeIncendiary(dataCount),
                     "decoy" => BrushColours.BrushGrenadeDecoy(dataCount),
+                    _ => throw new NotImplementedException(),
                 };
+
                 pen = grenadeType switch
-                {
-                    "smoke" => PenColours.PenGrenadeSmoke(dataCount),
-                    "flash" => PenColours.PenGrenadeFlash(dataCount),
-                    "he" => PenColours.PenGrenadeHE(dataCount),
-                    "incendiary" => PenColours.PenGrenadeIncendiary(dataCount),
-                    "decoy" => PenColours.PenGrenadeDecoy(dataCount),
-                };
-                int diameter = grenadeType switch
-                {
-                    "smoke" => 20,
-                    "flash" => 6,
-                    "he" => 12,
-                    "incendiary" => 20,
-                    "decoy" => 6,
-                };
+				{
+					"smoke" => PenColours.PenGrenadeSmoke(dataCount),
+					"flash" => PenColours.PenGrenadeFlash(dataCount),
+					"he" => PenColours.PenGrenadeHE(dataCount),
+					"incendiary" => PenColours.PenGrenadeIncendiary(dataCount),
+					"decoy" => PenColours.PenGrenadeDecoy(dataCount),
+					_ => throw new NotImplementedException(),
+				};
 
                 heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
             }
