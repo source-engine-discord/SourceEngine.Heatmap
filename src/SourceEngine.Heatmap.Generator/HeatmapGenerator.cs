@@ -556,7 +556,7 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     Console.WriteLine(string.Concat("Creating heatmap: ", heatmapType));
 
-                    Image bmp = new Bitmap(1024, 1024);
+                    Image bmp = new Bitmap(Resolution.resolution, Resolution.resolution);
 
                     using (var graphics = Graphics.FromImage(bmp))
                     {
@@ -649,7 +649,7 @@ namespace SourceEngine.Demo.Heatmaps
                             SaveImagePng(bmp, outputFilepath);
                         }
 
-                        bmp = new Bitmap(1024, 1024);
+                        bmp = new Bitmap(Resolution.resolution, Resolution.resolution);
                     }
 
                     DisposeImage(bmp);
@@ -742,13 +742,13 @@ namespace SourceEngine.Demo.Heatmaps
                         Image bmpCropObjective = ((Bitmap)img).Clone(cropObjective, img.PixelFormat);
                         Image bmpCropObjectiveOverview = overviewImage.Clone(cropObjective, img.PixelFormat);
 
-                        bmpCropObjective = ResizeImage(bmpCropObjective, 256, 256);
-                        bmpCropObjectiveOverview = ResizeImage(bmpCropObjectiveOverview, 256, 256);
+                        bmpCropObjective = ResizeImage(bmpCropObjective, Resolution.resolutionObjectives, Resolution.resolutionObjectives);
+                        bmpCropObjectiveOverview = ResizeImage(bmpCropObjectiveOverview, Resolution.resolutionObjectives, Resolution.resolutionObjectives);
 
                         SaveImagePng(bmpCropObjective, filepathObjective);
                         SaveImagePng(bmpCropObjectiveOverview, filepathObjectiveOverview);
                     }
-                    catch
+                    catch (Exception e)
                     {
                         var errorMessage = string.Concat("There was an issue copping and saving images in SaveImagePngObjective(). cropObjective: ", cropObjective);
                         consoleMessageStyler.PrintErrorMessage(errorMessage);

@@ -604,7 +604,7 @@ namespace SourceEngine.Heatmap.Generator
                 brush = BrushColours.BrushBombplant(dataCount);
                 pen = PenColours.PenBombplant(dataCount);
 
-                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
+                heatmapLogicCenter.DrawFilledCircleObjective(graphics, brush, pen, singlePoint, diameter);
             }
             brush?.Dispose();
             pen?.Dispose();
@@ -649,7 +649,7 @@ namespace SourceEngine.Heatmap.Generator
                 brush = BrushColours.BrushHostageRescue(dataCount);
                 pen = PenColours.PenHostageRescue(dataCount);
 
-                heatmapLogicCenter.DrawFilledCircle(graphics, brush, pen, singlePoint, diameter);
+                heatmapLogicCenter.DrawFilledCircleObjective(graphics, brush, pen, singlePoint, diameter);
             }
             brush?.Dispose();
             pen?.Dispose();

@@ -1,5 +1,6 @@
 ﻿using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+using SourceEngine.Heatmap.Generator.Constants;
 using SourceEngine.Heatmap.Generator.Enums;
 using SourceEngine.Heatmap.Generator.Models;
 using System;
@@ -220,13 +221,16 @@ namespace SourceEngine.Heatmap.Generator
 
         public void DrawLine(Graphics graphics, Pen pen, LinePoints linePoints)
         {
-            graphics.DrawLine(pen, linePoints.Point1, linePoints.Point2);
+            var point1 = new PointF(linePoints.Point1.X * Resolution.resolutionMultiplier, linePoints.Point1.Y * Resolution.resolutionMultiplier);
+            var point2 = new PointF(linePoints.Point2.X * Resolution.resolutionMultiplier, linePoints.Point2.Y * Resolution.resolutionMultiplier);
+
+            graphics.DrawLine(pen, point1, point2);
         }
 
         public void DrawCurve(Graphics graphics, Pen pen, LinePoints linePoints)
         {
-            var point1 = new PointF() { X = linePoints.Point1.X, Y = linePoints.Point1.Y }; // are these 3 lines even needed ????
-            var point2 = new PointF() { X = linePoints.Point2.X, Y = linePoints.Point2.Y };
+            var point1 = new PointF() { X = linePoints.Point1.X * Resolution.resolutionMultiplier, Y = linePoints.Point1.Y * Resolution.resolutionMultiplier };
+            var point2 = new PointF() { X = linePoints.Point2.X * Resolution.resolutionMultiplier, Y = linePoints.Point2.Y * Resolution.resolutionMultiplier };
 
             var points = new PointF[] { point1, point2 };
 
@@ -244,14 +248,35 @@ namespace SourceEngine.Heatmap.Generator
             graphics.DrawCurve(pen, points);
         }
 
+
         public void DrawCircle(Graphics graphics, Pen pen, PointF point, int diameter = 10)
+        {
+            var diameterMultiplied = diameter * Resolution.resolutionMultiplier;
+            RectangleF rect = new RectangleF((point.X * Resolution.resolutionMultiplier) - (diameterMultiplied / 2), (point.Y * Resolution.resolutionMultiplier) - (diameterMultiplied / 2), diameterMultiplied, diameterMultiplied);
+
+            graphics.DrawEllipse(pen, rect);
+        }
+
+        public void DrawFilledCircle(Graphics graphics, SolidBrush brush, Pen pen, PointF point, int diameter = 10)
+        {
+            var diameterMultiplied = diameter * Resolution.resolutionMultiplier;
+            RectangleF rect = new RectangleF((point.X * Resolution.resolutionMultiplier) - (diameterMultiplied / 2), (point.Y * Resolution.resolutionMultiplier) - (diameterMultiplied / 2), diameterMultiplied, diameterMultiplied);
+
+            graphics.DrawEllipse(pen, rect);
+            graphics.FillEllipse(brush, rect);
+        }
+
+
+        /* Objective ones do not take resolutionMultiplier into account as the images are cropped */
+
+        public void DrawCircleObjective(Graphics graphics, Pen pen, PointF point, int diameter = 10)
         {
             RectangleF rect = new RectangleF(point.X - (diameter / 2), point.Y - (diameter / 2), diameter, diameter);
 
             graphics.DrawEllipse(pen, rect);
         }
 
-        public void DrawFilledCircle(Graphics graphics, SolidBrush brush, Pen pen, PointF point, int diameter = 10)
+        public void DrawFilledCircleObjective(Graphics graphics, SolidBrush brush, Pen pen, PointF point, int diameter = 10)
         {
             RectangleF rect = new RectangleF(point.X - (diameter / 2), point.Y - (diameter / 2), diameter, diameter);
 
