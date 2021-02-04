@@ -6,43 +6,54 @@ namespace SourceEngine.Heatmap.Generator.Constants
 {
 	public static class BrushWidthMultiplierBorders
 	{
-		public static int border0 = 0;
-		public static int border1 = 1;
-		public static int border2 = 10;
-		public static int border3 = 100;
-		public static int border4 = 1000;
-		public static int border5 = 10000;
-		public static int border6 = 100000;
+		private static int border0 = 0;
+		private static int border1 = 1;
+		private static int border2 = 10;
+		private static int border3 = 100;
+		private static int border4 = 1000;
+		private static int border5 = 10000;
+		private static int border6 = 100000;
 
-		public static int opacityMultiplier0 = 0;
-		public static int opacityMultiplier1 = 15;
-		public static int opacityMultiplier2 = 10;
-		public static int opacityMultiplier3 = 6;
-		public static int opacityMultiplier4 = 4;
-		public static int opacityMultiplier5 = 2;
-		public static int opacityMultiplier6 = 1;
+		private static int width0 = 0;
+		private static int width1 = 15;
+		private static int width2 = 10;
+		private static int width3 = 6;
+		private static int width4 = 4;
+		private static int width5 = 2;
+		private static int width6 = 1;
+
+		public static float widthObjectiveMultiplier = 0.25f;
 
 		public static int GetMultiplier(int dataCount)
 		{
+			var width = 0;
+
 			switch (dataCount)
 			{
 				case var _ when dataCount > border6:
-					return opacityMultiplier6;
+					width = width6;
+					break;
 				case var _ when dataCount > border5:
-					return opacityMultiplier5;
+					width = width5;
+					break;
 				case var _ when dataCount > border4:
-					return opacityMultiplier4;
+					width = width4;
+					break;
 				case var _ when dataCount > border3:
-					return opacityMultiplier3;
+					width = width3;
+					break;
 				case var _ when dataCount > border2:
-					return opacityMultiplier2;
+					width = width2;
+					break;
 				case var _ when dataCount > border1:
-					return opacityMultiplier1;
+					width = width1;
+					break;
 				case var _ when dataCount > border0:
-					return opacityMultiplier0;
-				default:
-					return 0;
+					width = width0;
+					break;
 			}
+
+			return width > 0 ? width : 1;
 		}
 	}
 }
