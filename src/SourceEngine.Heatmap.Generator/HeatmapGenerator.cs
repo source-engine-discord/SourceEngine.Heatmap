@@ -78,6 +78,7 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         inputDataDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataDirectory));
                     }
 
                     i++;
@@ -87,6 +88,7 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         inputDataFilepathsFile = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataFilepathsFile));
                     }
 
                     i++;
@@ -96,6 +98,7 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         overviewFilesDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(overviewFilesDirectory));
                     }
 
                     i++;
@@ -105,6 +108,7 @@ namespace SourceEngine.Demo.Heatmaps
                     if (i < args.Count())
                     {
                         heatmapJsonDirectory = args[i + 1];
+                        CreateDirectoryIfDoesntExist(Directory.GetParent(heatmapJsonDirectory));
                     }
 
                     i++;
