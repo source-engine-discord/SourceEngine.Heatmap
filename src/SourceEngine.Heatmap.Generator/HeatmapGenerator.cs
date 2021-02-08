@@ -57,6 +57,12 @@ namespace SourceEngine.Demo.Heatmaps
             consoleMessageStyler.PrintErrorMessage(errorMessage);
         }
 
+        private static void unknownInDirectoryOrFilenameText()
+        {
+            var errorMessage = "'unknown' found in a directory or filename; this means map name could not be grabbed during demo parsing; exiting.";
+            consoleMessageStyler.PrintErrorMessage(errorMessage);
+        }
+
         private static void Main(string[] args)
         {
             Console.WriteLine("Running Heatmap Generator");
@@ -77,7 +83,11 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     if (i < args.Count())
                     {
-                        inputDataDirectory = args[i + 1];
+                        var argValue = args[i + 1];
+                        if (GetTextContainsUnknown(argValue))
+                            return;
+
+                        inputDataDirectory = argValue;
                         CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataDirectory));
                     }
 
@@ -87,7 +97,11 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     if (i < args.Count())
                     {
-                        inputDataFilepathsFile = args[i + 1];
+                        var argValue = args[i + 1];
+                        if (GetTextContainsUnknown(argValue))
+                            return;
+
+                        inputDataFilepathsFile = argValue;
                         CreateDirectoryIfDoesntExist(Directory.GetParent(inputDataFilepathsFile));
                     }
 
@@ -97,7 +111,11 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     if (i < args.Count())
                     {
-                        overviewFilesDirectory = args[i + 1];
+                        var argValue = args[i + 1];
+                        if (GetTextContainsUnknown(argValue))
+                            return;
+
+                        overviewFilesDirectory = argValue;
                         CreateDirectoryIfDoesntExist(Directory.GetParent(overviewFilesDirectory));
                     }
 
@@ -107,7 +125,11 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     if (i < args.Count())
                     {
-                        heatmapJsonDirectory = args[i + 1];
+                        var argValue = args[i + 1];
+                        if (GetTextContainsUnknown(argValue))
+                            return;
+
+                        heatmapJsonDirectory = argValue;
                         CreateDirectoryIfDoesntExist(Directory.GetParent(heatmapJsonDirectory));
                     }
 
@@ -117,7 +139,11 @@ namespace SourceEngine.Demo.Heatmaps
                 {
                     if (i < args.Count())
                     {
-                        outputHeatmapDirectory = args[i + 1];
+                        var argValue = args[i + 1];
+                        if (GetTextContainsUnknown(argValue))
+                            return;
+
+                        outputHeatmapDirectory = argValue;
                         CreateDirectoryIfDoesntExist(Directory.GetParent(outputHeatmapDirectory));
                     }
 
@@ -186,6 +212,11 @@ namespace SourceEngine.Demo.Heatmaps
             PrintSuccessMessage(successMessage);
         }
 
+        private static bool GetTextContainsUnknown(string text)
+		{
+            return text.ToLower().Contains("unknown_");
+		}
+
         private static void CreateDirectoryIfDoesntExist(DirectoryInfo directoryInfo)
         {
             if (!directoryInfo.Exists)
@@ -228,6 +259,8 @@ namespace SourceEngine.Demo.Heatmaps
             var allStatsMatchIdsDone = new List<string>();
             ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromDirectory);
             ParseJson(allOutputDataList, allStatsMatchIdsDone, allStatsFilepathsFromTxtFile); // prioritises json from filepathsFromDirectory, so only new matches' data will be added
+
+            allOutputDataList.RemoveAll(x => x.AllStats.mapInfo.MapName.ToLower() == "unknown"); // remove all data where the map name is "unknown"
 
             if (allOutputDataList.Count() > 0)
             {
