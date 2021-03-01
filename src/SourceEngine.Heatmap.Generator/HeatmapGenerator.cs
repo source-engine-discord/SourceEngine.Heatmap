@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Heatmap.Generator;
 using SourceEngine.Heatmap.Generator.Constants;
@@ -299,7 +300,9 @@ namespace SourceEngine.Demo.Heatmaps
                     }
 
                     // remove unnecessary defuse specific or hostage specific heatmaps for the map
-                    if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse" || allOutputDataList.FirstOrDefault().AllStats.rescueZoneStats.All(x => x.XPositionMin == null))
+                    var gamemode = allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower();
+
+                    if (gamemode == Gamemodes.Defuse || gamemode == Gamemodes.WingmanDefuse)
                     {
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
@@ -307,7 +310,7 @@ namespace SourceEngine.Demo.Heatmaps
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.HostageRescueLocations.ToString());
                     }
-                    else if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "hostage" || allOutputDataList.FirstOrDefault().AllStats.bombsiteStats.All(x => x.XPositionMin == null))
+                    else if (gamemode == Gamemodes.Hostage || gamemode == Gamemodes.WingmanHostage)
                     {
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplantASite.ToString());
@@ -317,6 +320,22 @@ namespace SourceEngine.Demo.Heatmaps
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplantBSite.ToString());
                         heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
                     }
+                    else if (gamemode == Gamemodes.DangerZone)
+					{
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKills.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplantASite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterBombplantBSite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsBeforeHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.TKillsAfterHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKills.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeBombplant.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplantASite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterBombplantBSite.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsBeforeHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.CTKillsAfterHostageTaken.ToString());
+                        heatmapsToGenerate.RemoveAll(x => x == HeatmapTypeNames.BombPlantLocations.ToString());
+					}
 
                     // always put playerpositionsbyteam heatmap last as it takes much longer than the others
                     if (heatmapsToGenerate.Any(x => x == HeatmapTypeNames.PlayerPositionsByTeam.ToString()))
@@ -637,9 +656,9 @@ namespace SourceEngine.Demo.Heatmaps
                             }
                             else
                             {
-                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
+                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == Gamemodes.Defuse)
                                 {
-                                    var warningMessage = "No data for pointsDataASite even though gamemode is defuse";
+                                    var warningMessage = $"No data for pointsDataASite even though gamemode is {Gamemodes.Defuse}";
                                     consoleMessageStyler.PrintWarningMessage(warningMessage);
                                 }
                             }
@@ -650,9 +669,9 @@ namespace SourceEngine.Demo.Heatmaps
                             }
                             else
                             {
-                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == "defuse")
+                                if (allOutputDataList.FirstOrDefault().AllStats.mapInfo.GameMode.ToLower() == Gamemodes.Defuse)
                                 {
-                                    var warningMessage = "No data for pointsDataBSite even though gamemode is defuse";
+                                    var warningMessage = $"No data for pointsDataBSite even though gamemode is {Gamemodes.Defuse}";
                                     consoleMessageStyler.PrintWarningMessage(warningMessage);
                                 }
                             }
