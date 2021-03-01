@@ -4,15 +4,16 @@ Outputs heatmap overlay images and JSON information files from CS:GO parsed demo
 ### Usage
 
 ```
-	-inputdatadirectory            [path]                              		The folder location of the input json data files (parsed demo data). (Optional if -inputdatafilepathsfile provided)
-	-inputdatafilepathsfile        [path]                              		The file location of the text file containing a list of filepaths that contain input json data (parsed demo data). (Optional if -inputdatadirectory provided)
-	-overviewfilesdirectory        [path]                              		The folder location of the overview files (required if generating BombplantLocations or HostageRescueLocations heatmaps)
-	-heatmapjsondirectory          [path]                              		The folder location of the json for the previously created heatmap files.
-	-outputheatmapdirectory        [path]                              		The folder location to output the generated heatmaps.
-	-heatmapstogenerate            [heatmap types (space seperated)]		A list of heatmap key names to generate.
+	-inputdatadirectory        [path]                               The folder location of the input json data files (parsed demo data). (Optional if -inputdatafilepathsfile provided)
+	-inputdatafilepathsfile    [path]                               The file location of the text file containing a list of filepaths that contain input json data (parsed demo data). (Optional if -inputdatadirectory provided)
+	-overviewfilesdirectory    [path]                               The folder location of the overview files (required if generating BombplantLocations or HostageRescueLocations heatmaps)
+	-heatmapjsondirectory      [path]                               The folder location of the json for the previously created heatmap files.
+	-outputheatmapdirectory    [path]                               The folder location to output the generated heatmaps.
+	-heatmapstogenerate        [heatmap types (space seperated)]    A list of heatmap key names to generate.
 ```
 
 Heatmap Types
+(The Gamemode value in MapStats in the JSON inputted defines which heatmaps are exempt from be created)
 ```
     // Generate All Heatmaps
     All
