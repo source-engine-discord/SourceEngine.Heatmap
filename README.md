@@ -13,6 +13,7 @@ Outputs heatmap overlay images and JSON information files from CS:GO parsed demo
 ```
 
 Heatmap Types
+
 (The Gamemode value in MapStats in the JSON inputted defines which heatmaps are exempt from be created)
 ```
     // Generate All Heatmaps
