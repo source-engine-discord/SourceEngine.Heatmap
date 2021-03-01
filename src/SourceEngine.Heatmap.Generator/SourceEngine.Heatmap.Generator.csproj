@@ -11,6 +11,13 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Label="Assembly Metadata">
+    <Company>Source Engine Discord</Company>
+    <Copyright>© 2014 EHVAG, 2020 Source Engine Discord and contributors</Copyright>
+    <Product>SourceEngine.Heatmap</Product>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="SourceEngine.Demo.Stats" Version="2.5.0" />
